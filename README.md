@@ -31,13 +31,13 @@ An L-system is represented in this crate by an instance of `LSystem`.  The sugge
 is to use a `LSystemBuilder`, as shown in this implementation of Lindenmayer's Algae system:
 
 ```rust
-use dcc_lsystem::{LSystemBuilder, TokenType};
+use dcc_lsystem::{LSystemBuilder, variable};
 
 let mut builder = LSystemBuilder::new();
 
 // Set up our two tokens
-let a = builder.token("A", TokenType::Variable);
-let b = builder.token("B", TokenType::Variable);
+let a = variable!(builder, "A");
+let b = variable!(builder, "B");
 
 // Set up our axiom
 builder.axiom(vec![a]);

@@ -32,13 +32,13 @@ An L-system is represented in this crate by an instance of `LSystem`.  The sugge
 is to use a `LSystemBuilder`, as shown in this implementation of Lindenmayer's Algae system:
 
 ```rust
-use dcc_lsystem::{LSystemBuilder, TokenType};
+use dcc_lsystem::{LSystemBuilder, variable};
 
 let mut builder = LSystemBuilder::new();
 
 // Set up our two tokens
-let a = builder.token("A", TokenType::Variable);
-let b = builder.token("B", TokenType::Variable);
+let a = variable!(builder, "A"); // expands to builder.token("A", TokenType::Variable)
+let b = variable!(builder, "B"); // similar
 
 // Set up our axiom
 builder.axiom(vec![a]);
@@ -236,6 +236,20 @@ impl LSystemBuilder {
     }
 }
 
+#[macro_export]
+macro_rules! variable {
+        ( $x:expr, $y:expr ) => {
+            $x.token($y, $crate::TokenType::Variable)
+        }
+}
+
+#[macro_export]
+macro_rules! constant {
+        ( $x:expr, $y:expr ) => {
+            $x.token($y, $crate::TokenType::Constant)
+        }
+}
+
 fn build_rules_string(rules: &[TransformationRule], arena: &Arena<Token>) -> String {
     let mut st = Vec::new();
 
@@ -268,13 +282,13 @@ impl std::fmt::Debug for LSystemBuilder {
 /// of Lindenmayer's system below.
 ///
 /// ```rust
-/// use dcc_lsystem::{LSystemBuilder, TokenType};
+/// use dcc_lsystem::{LSystemBuilder, variable};
 ///
 /// let mut builder = LSystemBuilder::new();
 ///
 /// // Set up our two tokens
-/// let a = builder.token("A", TokenType::Variable);
-/// let b = builder.token("B", TokenType::Variable);
+/// let a = variable!(builder, "A");
+/// let b = variable!(builder, "B");
 ///
 /// // Set the axiom
 /// builder.axiom(vec![a]);
@@ -330,12 +344,12 @@ impl LSystem {
     ///
     /// # Example
     /// ```rust
-    /// use dcc_lsystem::{TokenType, LSystemBuilder};
+    /// use dcc_lsystem::{LSystemBuilder, variable};
     ///
     /// let mut builder = LSystemBuilder::new();
     ///
     /// //  Create a simple L-System with one variable `A` and production rule `A -> AA`
-    /// let a = builder.token("A", TokenType::Variable);
+    /// let a = variable!(builder, "A");
     /// builder.axiom(vec![a]);
     /// builder.transformation_rule(a, vec![a,a]);
     /// let mut system = builder.finish();
@@ -406,10 +420,10 @@ mod tests {
     fn fractal_binary_tree() {
         let mut builder = LSystemBuilder::new();
 
-        let zero = builder.token("0", TokenType::Variable);
-        let one = builder.token("1", TokenType::Variable);
-        let left_square_bracket = builder.token("[", TokenType::Constant);
-        let right_square_bracket = builder.token("]", TokenType::Constant);
+        let zero = variable!(builder, "0");
+        let one = variable!(builder, "1");
+        let left_square_bracket = constant!(builder, "[");
+        let right_square_bracket = constant!(builder, "]");
 
         builder.axiom(vec![zero]);
         builder.transformation_rule(one, vec![one, one]);
@@ -430,5 +444,16 @@ mod tests {
 
         system.step();
         assert_eq!(system.render(), "1111[11[1[0]0]1[0]0]11[1[0]0]1[0]0");
+    }
+
+    #[test]
+    fn macro_usage() {
+        let mut builder = LSystemBuilder::new();
+
+        let x = variable!(builder, "X");
+        let y = variable!(builder, "Y");
+
+        assert_eq!(x, ArenaId(0));
+        assert_eq!(y, ArenaId(1));
     }
 }
