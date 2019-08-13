@@ -5,19 +5,13 @@ use dcc_lsystem::{constant, variable, ArenaId, LSystemBuilder};
 use image::{ImageBuffer, Rgb};
 use std::f32::consts::FRAC_PI_4;
 
-pub fn binary_tree_lsystem_builder() -> (LSystemBuilder, ArenaId, ArenaId, ArenaId, ArenaId) {
+fn main() {
     let mut builder = LSystemBuilder::new();
 
     let zero = variable!(builder, "0");
     let one = variable!(builder, "1");
     let lsb = constant!(builder, "[");
     let rsb = constant!(builder, "]");
-
-    (builder, zero, one, lsb, rsb)
-}
-
-fn main() {
-    let (mut builder, zero, one, lsb, rsb) = binary_tree_lsystem_builder();
 
     // our axiom (i.e. initial condition) is 0
     builder.axiom(vec![zero]);
@@ -55,7 +49,7 @@ fn main() {
     let thickness = 15.5;
     let padding: u32 = 20;
 
-    let (turtle_width, turtle_height, min_x) = turtle.bounds();
+    let (turtle_width, turtle_height, min_x, min_y) = turtle.bounds();
 
     // We add some padding to the width reported by our turtle to make
     // our final image look a little nicer.
@@ -72,7 +66,7 @@ fn main() {
     // take care of the padding for us.
     let xp = |x: i32| -> u32 { (x - min_x + padding as i32) as u32 };
 
-    let yp = |y: i32| -> u32 { (height as i64 - (y + padding as i32) as i64) as u32 };
+    let yp = |y: i32| -> u32 { (height as i64 - (y - min_y + padding as i32) as i64) as u32 };
 
     // Draw the lines
     for (x1, y1, x2, y2) in turtle.lines() {
