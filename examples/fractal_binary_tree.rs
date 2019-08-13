@@ -17,8 +17,6 @@ pub fn binary_tree_lsystem_builder() -> (LSystemBuilder, ArenaId, ArenaId, Arena
 }
 
 fn main() {
-    dbg!(StackTurtle::default());
-
     let (mut builder, zero, one, lsb, rsb) = binary_tree_lsystem_builder();
 
     // our axiom (i.e. initial condition) is 0
