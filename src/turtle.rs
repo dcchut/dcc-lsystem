@@ -95,7 +95,7 @@ impl BaseTurtle {
     }
 
     /// Set the current position of this turtle to `(x,y)`.
-    pub fn set_position(&mut self, x : i32, y : i32) {
+    pub fn set_position(&mut self, x: i32, y: i32) {
         self.x = x;
         self.y = y;
         self.update_bounds();
@@ -150,6 +150,12 @@ impl BaseTurtle {
     }
 }
 
+impl Default for BaseTurtle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Heading {
     North,
@@ -160,7 +166,7 @@ pub enum Heading {
 
 impl Heading {
     /// Returns the `Heading` that is 90 degrees left of this one.
-    pub fn left(&self) -> Self {
+    pub fn left(self) -> Self {
         match self {
             Heading::North => Heading::West,
             Heading::West => Heading::South,
@@ -170,7 +176,7 @@ impl Heading {
     }
 
     /// Returns the `Heading` that is 90 degrees right of this one.
-    pub fn right(&self) -> Self {
+    pub fn right(self) -> Self {
         // Don't judge me...
         self.left().left().left()
     }
