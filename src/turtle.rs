@@ -27,7 +27,7 @@ use std::f32::consts::FRAC_PI_2;
 ///     inner: BaseTurtle,
 /// }
 ///
-/// impl Turtle for DumbTurtle {
+/// impl Turtle<i32> for DumbTurtle {
 ///     fn inner(&self) -> &BaseTurtle {
 ///         &self.inner
 ///     }
@@ -41,7 +41,7 @@ use std::f32::consts::FRAC_PI_2;
 ///     }
 /// }
 /// ```
-pub trait Turtle {
+pub trait Turtle<T> {
     /// Returns a reference to the wrapped `BaseTurtle`.
     fn inner(&self) -> &BaseTurtle;
 
@@ -49,7 +49,7 @@ pub trait Turtle {
     fn inner_mut(&mut self) -> &mut BaseTurtle;
 
     /// Moves the turtle forward by `distance`.
-    fn forward(&mut self, distance: i32);
+    fn forward(&mut self, distance: T);
 }
 
 #[derive(Clone, Debug)]
@@ -215,7 +215,7 @@ impl TaxiTurtle {
     }
 }
 
-impl Turtle for TaxiTurtle {
+impl Turtle<i32> for TaxiTurtle {
     fn inner(&self) -> &BaseTurtle {
         &self.turtle
     }
@@ -298,7 +298,7 @@ impl StackTurtle {
     }
 }
 
-impl Turtle for StackTurtle {
+impl Turtle<i32> for StackTurtle {
     fn inner(&self) -> &BaseTurtle {
         &self.turtle
     }

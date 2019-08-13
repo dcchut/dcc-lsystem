@@ -91,6 +91,7 @@ pub mod token;
 
 pub mod image;
 pub mod turtle;
+pub mod lattice;
 
 #[cfg(test)]
 mod tests;
