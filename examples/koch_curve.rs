@@ -23,10 +23,6 @@ fn main() {
     // each edge will be this long
     let walk_distance = 30;
 
-    // our final image has 3^(steps) horizontal boxes, so make our width a multiple of this
-    // dont need this
-    //let width = 3_u32.pow(step_limit - 1) * 2;
-
     let mut turtle = TaxiTurtle::new();
     turtle.set_heading(Heading::East);
 
