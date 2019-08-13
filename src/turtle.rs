@@ -180,72 +180,21 @@ impl Heading {
         // Don't judge me...
         self.left().left().left()
     }
-}
 
-#[derive(Clone, Debug)]
-pub struct TaxiTurtle {
-    turtle: BaseTurtle,
-    heading: Heading,
-    pen_down: bool,
-}
-
-impl TaxiTurtle {
-    /// Return a new `TaxiTurtle` instance.
-    pub fn new() -> Self {
-        Self {
-            turtle: BaseTurtle::new(),
-            heading: Heading::East,
-            pen_down: true,
+    pub fn dx(self) -> i32 {
+        match self {
+            Heading::West => -1,
+            Heading::East => 1,
+            _ => 0,
         }
     }
 
-    /// Makes the turtle turn 90 degrees left of its current heading.
-    pub fn left(&mut self) {
-        self.heading = self.heading.left();
-    }
-
-    /// Makes the turtle turn 90 degrees right of its current heading.
-    pub fn right(&mut self) {
-        self.heading = self.heading.right();
-    }
-
-    /// Set the heading of this turtle.
-    pub fn set_heading(&mut self, heading: Heading) {
-        self.heading = heading;
-    }
-}
-
-impl Turtle<i32> for TaxiTurtle {
-    fn inner(&self) -> &BaseTurtle {
-        &self.turtle
-    }
-
-    fn inner_mut(&mut self) -> &mut BaseTurtle {
-        &mut self.turtle
-    }
-
-    fn forward(&mut self, distance: i32) {
-        let dx = match self.heading {
-            Heading::East => distance,
-            Heading::West => -distance,
+    pub fn dy(self) -> i32 {
+        match self {
+            Heading::North => 1,
+            Heading::South => -1,
             _ => 0,
-        };
-
-        let dy = match self.heading {
-            Heading::North => distance,
-            Heading::South => -distance,
-            _ => 0,
-        };
-
-        if self.pen_down {
-            self.turtle.delta_move(dx, dy);
         }
-    }
-}
-
-impl Default for TaxiTurtle {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

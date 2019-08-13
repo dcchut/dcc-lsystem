@@ -1,9 +1,9 @@
-use dcc_lsystem::image::{fill_mut, draw_line_mut};
+use dcc_lsystem::image::{draw_line_mut, fill_mut};
+use dcc_lsystem::lattice::{Lattice, LatticeTurtle};
+use dcc_lsystem::turtle::{Turtle};
 use dcc_lsystem::{constant, variable, LSystemBuilder};
-use std::f32::consts::FRAC_PI_3;
-use dcc_lsystem::turtle::{StackTurtle, Turtle};
 use image::{ImageBuffer, Rgb};
-use dcc_lsystem::lattice::{LatticeTurtle, Lattice};
+use std::f32::consts::FRAC_PI_3;
 
 fn main() {
     let mut builder = LSystemBuilder::new();
@@ -26,8 +26,13 @@ fn main() {
     let mut current_angle = 0;
     let padding: u32 = 20;
 
-    let lattice = Lattice::new((line_length, 0.0),
-                               (line_length * (FRAC_PI_3).cos(), line_length * (FRAC_PI_3).sin()));
+    let lattice = Lattice::new(
+        (line_length, 0.0),
+        (
+            line_length * (FRAC_PI_3).cos(),
+            line_length * (FRAC_PI_3).sin(),
+        ),
+    );
 
     let mut turtle = LatticeTurtle::new(lattice);
 

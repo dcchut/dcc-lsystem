@@ -1,7 +1,8 @@
 use dcc_lsystem::image::fill_mut;
 use dcc_lsystem::{constant, variable, LSystemBuilder};
 
-use dcc_lsystem::turtle::{Heading, TaxiTurtle, Turtle};
+use dcc_lsystem::lattice::LatticeTurtle;
+use dcc_lsystem::turtle::{Heading, Turtle};
 use image::{ImageBuffer, Rgb};
 
 fn main() {
@@ -23,19 +24,17 @@ fn main() {
     // each edge will be this long
     let walk_distance = 30;
 
-    let mut turtle = TaxiTurtle::new();
-    turtle.set_heading(Heading::East);
+    let mut turtle = LatticeTurtle::grid();
+    let mut heading = Heading::East;
 
     for token in system.get_state() {
         if *token == p {
-            // turn left
-            turtle.left();
+            heading = heading.left();
         } else if *token == m {
-            // turn right
-            turtle.right();
+            heading = heading.right();
         } else {
             // draw forward
-            turtle.forward(walk_distance);
+            turtle.forward((walk_distance * heading.dx(), walk_distance * heading.dy()));
         }
     }
 
