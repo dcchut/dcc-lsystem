@@ -22,9 +22,6 @@ fn main() {
     // so we make the width of our image an integer multiple of this number.
     let width = 3_u32.pow(step_limit - 1) * 2;
 
-    // the height of each bar in the render
-    let bar_height = 5;
-
     // the vertical spacing between each bar in the render
     let vertical_spacing = 5;
 
@@ -35,7 +32,7 @@ fn main() {
         let bar_width : u32 = width / state.len() as u32;
 
         let mut x : u32 = 0;
-        let y = index * (bar_height + vertical_spacing) + vertical_spacing;
+        let y = vertical_spacing * index;
 
         for token in system.get_state() {
             if *token == a {
@@ -48,9 +45,9 @@ fn main() {
         system.step();
     }
 
-    let padding : u32 = 20;
+    let padding : u32 = 5;
     let render_width = 2 * padding + width as u32;
-    let render_height = 2 * padding + ((step_limit - 1) * (bar_height + vertical_spacing) + vertical_spacing);
+    let render_height = 2 * padding + vertical_spacing * (step_limit - 1);
 
     let mut buffer = ImageBuffer::new(render_width, render_height);
 
