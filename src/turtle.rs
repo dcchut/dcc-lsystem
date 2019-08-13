@@ -1,28 +1,76 @@
 use std::cmp::{max, min};
 use std::f32::consts::FRAC_PI_2;
 
+/// A simple trait for an integer-valued Turtle.
+///
+/// Any implementation of this trait should contain a `BaseTurtle` struct which
+/// is referred to by the `inner` and `inner_mut` methods.  This BaseTurtle deals
+/// with storing the turtle's current position, and drawing lines as appropriate.
+///
+/// The real meat and potatoes of this trait is the `forward` method, which is
+/// how someone would actually move your turtle.  Your implementation should be responsible
+/// for keeping track of the turtle's heading, and `forward` should move your turtle
+/// in that direction (using `self.inner_mut().delta_move(dx, dy)`).
+///
+/// # Future
+///
+/// In the future the `Turtle` trait may be modified by the addition of a set_heading()
+/// method generic over some `Heading` trait.
+///
+/// # Example
+/// The following `DumbTurtle` only moves to the right.
+///
+/// ```rust
+/// use dcc_lsystem::turtle::{BaseTurtle, Turtle};
+///
+/// struct DumbTurtle {
+///     inner: BaseTurtle,
+/// }
+///
+/// impl Turtle for DumbTurtle {
+///     fn inner(&self) -> &BaseTurtle {
+///         &self.inner
+///     }
+///
+///     fn inner_mut(&mut self) -> &mut BaseTurtle {
+///         &mut self.inner
+///     }
+///
+///     fn forward(&mut self, distance: i32) {
+///         self.inner_mut().delta_move(distance, 0);
+///     }
+/// }
+/// ```
+pub trait Turtle {
+    /// Returns a reference to the wrapped `BaseTurtle`.
+    fn inner(&self) -> &BaseTurtle;
+
+    /// Returns a mutable reference to the wrapped `BaseTurtle`.
+    fn inner_mut(&mut self) -> &mut BaseTurtle;
+
+    /// Moves the turtle forward by `distance`.
+    fn forward(&mut self, distance: i32);
+}
+
 #[derive(Clone, Debug)]
-pub struct StackTurtle {
+pub struct BaseTurtle {
     x: i32,
     y: i32,
-    heading: f32,
     lines: Vec<(i32, i32, i32, i32)>,
-    stack: Vec<(i32, i32, f32)>,
     max_x: i32,
     max_y: i32,
     min_x: i32,
     min_y: i32,
-    pen_down : bool,
+    pen_down: bool,
 }
 
-impl StackTurtle {
+impl BaseTurtle {
+    /// Creates a new `BaseTurtle` instance.
     pub fn new() -> Self {
         Self {
             x: 0,
             y: 0,
-            heading: FRAC_PI_2,
             lines: Vec::new(),
-            stack: Vec::new(),
             max_x: 0,
             max_y: 0,
             min_x: 0,
@@ -31,40 +79,40 @@ impl StackTurtle {
         }
     }
 
-    pub fn push(&mut self) {
-        // push our current position and heading onto the stack
-        self.stack.push((self.x, self.y, self.heading));
+    /// Returns the current `x` coordinate of the turtle.
+    pub fn x(&self) -> i32 {
+        self.x
     }
 
-    pub fn pop(&mut self) {
-        let (x, y, heading) = self.stack.pop().expect("Called pop on empty stack");
+    /// Returns the current `y` coordinate of the turtle.
+    pub fn y(&self) -> i32 {
+        self.y
+    }
 
+    /// Returns a slice containing all the lines `(x1, y1, x2, y2)` traversed by the turtle.
+    pub fn lines(&self) -> &[(i32, i32, i32, i32)] {
+        &self.lines
+    }
+
+    /// Set the current position of this turtle to `(x,y)`.
+    pub fn set_position(&mut self, x : i32, y : i32) {
         self.x = x;
         self.y = y;
-        self.heading = heading;
-    }
-
-    pub fn left(&mut self, angle: f32) {
-        self.heading += angle;
-    }
-
-    pub fn right(&mut self, angle: f32) {
-        self.heading -= angle;
+        self.update_bounds();
     }
 
     fn update_bounds(&mut self) {
-        // update our max and min values
-        self.max_x = max(self.x, self.max_x);
-        self.max_y = max(self.y, self.max_y);
-        self.min_x = min(self.x, self.min_x);
-        self.min_y = min(self.y, self.min_y);
+        self.min_x = min(self.min_x, self.x);
+        self.min_y = min(self.min_y, self.y);
+        self.max_x = max(self.max_x, self.x);
+        self.max_y = max(self.max_y, self.y);
     }
 
-    pub fn forward(&mut self, distance: f32) {
-        let x2 = (self.x as f32 + self.heading.cos() * distance) as i32;
-        let y2 = (self.y as f32 + self.heading.sin() * distance) as i32;
+    /// Moves the turtle by `(dx,dy)`.
+    pub fn delta_move(&mut self, dx: i32, dy: i32) {
+        let x2 = self.x + dx;
+        let y2 = self.y + dy;
 
-        // only draw the line if the pen is down
         if self.pen_down {
             self.lines.push((self.x, self.y, x2, y2));
         }
@@ -75,18 +123,13 @@ impl StackTurtle {
         self.update_bounds();
     }
 
-    pub fn move_to(&mut self, x : i32, y : i32) {
-        // if the pen is down we draw a line
-        if self.pen_down {
-            self.lines.push((self.x, self.y, x, y));
-        }
-
-        //
-        self.x = x;
-        self.y = y;
-        self.update_bounds();
-    }
-
+    /// Returns `(total_width, total_height, min_x, min_y)`, where
+    /// `total_width` (respectively `total_height) is the largest horizontal (respectively vertical) distance between any two points
+    /// that the turtle visited, `min_x` (respectively `min_y`) is the smallest horizontal (respectively vertical) position that
+    /// the turtle visited.
+    ///
+    /// This is useful for converting from turtle coordinates to a new coordinate system starting at `(0,0)`
+    /// with width `total_width`, height `total_height`, and all positions have positive `x` and `y` coordinates.
     pub fn bounds(&self) -> (u32, u32, i32, i32) {
         (
             (self.max_x + self.min_x.abs()) as u32,
@@ -96,20 +139,175 @@ impl StackTurtle {
         )
     }
 
-    pub fn lines(&self) -> &[(i32, i32, i32, i32)] {
-        &self.lines
-    }
-
+    /// Puts the turtles pen down.
     pub fn pen_down(&mut self) {
         self.pen_down = true;
     }
 
+    /// Pulls the turtles pen up.
     pub fn pen_up(&mut self) {
         self.pen_down = false;
     }
+}
 
-    pub fn set_heading(&mut self, heading : f32) {
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum Heading {
+    North,
+    South,
+    East,
+    West,
+}
+
+impl Heading {
+    /// Returns the `Heading` that is 90 degrees left of this one.
+    pub fn left(&self) -> Self {
+        match self {
+            Heading::North => Heading::West,
+            Heading::West => Heading::South,
+            Heading::South => Heading::East,
+            Heading::East => Heading::North,
+        }
+    }
+
+    /// Returns the `Heading` that is 90 degrees right of this one.
+    pub fn right(&self) -> Self {
+        // Don't judge me...
+        self.left().left().left()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct TaxiTurtle {
+    turtle: BaseTurtle,
+    heading: Heading,
+    pen_down: bool,
+}
+
+impl TaxiTurtle {
+    /// Return a new `TaxiTurtle` instance.
+    pub fn new() -> Self {
+        Self {
+            turtle: BaseTurtle::new(),
+            heading: Heading::East,
+            pen_down: true,
+        }
+    }
+
+    /// Makes the turtle turn 90 degrees left of its current heading.
+    pub fn left(&mut self) {
+        self.heading = self.heading.left();
+    }
+
+    /// Makes the turtle turn 90 degrees right of its current heading.
+    pub fn right(&mut self) {
+        self.heading = self.heading.right();
+    }
+
+    /// Set the heading of this turtle.
+    pub fn set_heading(&mut self, heading: Heading) {
         self.heading = heading;
+    }
+}
+
+impl Turtle for TaxiTurtle {
+    fn inner(&self) -> &BaseTurtle {
+        &self.turtle
+    }
+
+    fn inner_mut(&mut self) -> &mut BaseTurtle {
+        &mut self.turtle
+    }
+
+    fn forward(&mut self, distance: i32) {
+        let dx = match self.heading {
+            Heading::East => distance,
+            Heading::West => -distance,
+            _ => 0,
+        };
+
+        let dy = match self.heading {
+            Heading::North => distance,
+            Heading::South => -distance,
+            _ => 0,
+        };
+
+        if self.pen_down {
+            self.turtle.delta_move(dx, dy);
+        }
+    }
+}
+
+impl Default for TaxiTurtle {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct StackTurtle {
+    turtle: BaseTurtle,
+    heading: f32,
+    stack: Vec<(i32, i32, f32)>,
+    pen_down: bool,
+}
+
+impl StackTurtle {
+    /// Return a new `StackTurtle` instance.
+    pub fn new() -> Self {
+        Self {
+            turtle: BaseTurtle::new(),
+            heading: FRAC_PI_2,
+            stack: Vec::new(),
+            pen_down: true,
+        }
+    }
+
+    /// Pushes the current position and heading of the turtle onto the stack.
+    pub fn push(&mut self) {
+        self.stack
+            .push((self.turtle.x(), self.turtle.y(), self.heading));
+    }
+
+    /// Pops the position and heading off the stack.
+    pub fn pop(&mut self) {
+        let (x, y, heading) = self.stack.pop().expect("Called pop on empty stack");
+
+        self.turtle.set_position(x, y);
+        self.heading = heading;
+    }
+
+    /// Turns the turtle left by the given angle (in radians).
+    pub fn left(&mut self, angle: f32) {
+        self.heading += angle;
+    }
+
+    /// Turns the turtle right by the given angle (in radians).
+    pub fn right(&mut self, angle: f32) {
+        self.heading -= angle;
+    }
+
+    /// Set the current heading of the turtle (in radians).
+    pub fn set_heading(&mut self, heading: f32) {
+        self.heading = heading;
+    }
+}
+
+impl Turtle for StackTurtle {
+    fn inner(&self) -> &BaseTurtle {
+        &self.turtle
+    }
+
+    fn inner_mut(&mut self) -> &mut BaseTurtle {
+        &mut self.turtle
+    }
+
+    fn forward(&mut self, distance: i32) {
+        let dx = self.heading.cos() * distance as f32;
+        let dy = self.heading.sin() * distance as f32;
+
+        if self.pen_down {
+            self.turtle.delta_move(dx as i32, dy as i32);
+        }
     }
 }
 

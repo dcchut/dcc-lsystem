@@ -29,12 +29,12 @@ fn main() {
 
     for index in 0..step_limit {
         let state = system.get_state();
-        let bar_width : u32 = width / state.len() as u32;
+        let bar_width: u32 = width / state.len() as u32;
 
-        let mut x : u32 = 0;
+        let mut x: u32 = 0;
         let y = vertical_spacing * index;
 
-        for token in system.get_state() {
+        for token in state {
             if *token == a {
                 // draw a line
                 lines.push((x, y, x + bar_width, y));
@@ -45,7 +45,7 @@ fn main() {
         system.step();
     }
 
-    let padding : u32 = 5;
+    let padding: u32 = 5;
     let render_width = 2 * padding + width as u32;
     let render_height = 2 * padding + vertical_spacing * (step_limit - 1);
 
@@ -59,7 +59,7 @@ fn main() {
         for x in x1..=x2 {
             for y in y1..=y2 {
                 let pixel = buffer.get_pixel_mut(x + padding, y + padding);
-                *pixel = Rgb([0u8,0u8,0u8]);
+                *pixel = Rgb([0u8, 0u8, 0u8]);
             }
         }
     }

@@ -1,6 +1,7 @@
 use dcc_lsystem::image::{draw_line_mut, fill_mut};
-use dcc_lsystem::turtle::StackTurtle;
-use dcc_lsystem::{constant, variable, ArenaId, LSystemBuilder};
+use dcc_lsystem::turtle::{StackTurtle, Turtle};
+
+use dcc_lsystem::{constant, variable, LSystemBuilder};
 
 use image::{ImageBuffer, Rgb};
 use std::f32::consts::FRAC_PI_4;
@@ -27,7 +28,7 @@ fn main() {
     // We use our StackTurtle to remember where we should draw each line in our binary tree
     let mut turtle = StackTurtle::new();
 
-    let move_distance = 200.0;
+    let move_distance = 200;
     let angle = FRAC_PI_4;
 
     for token in system.get_state() {
@@ -49,7 +50,7 @@ fn main() {
     let thickness = 15.5;
     let padding: u32 = 20;
 
-    let (turtle_width, turtle_height, min_x, min_y) = turtle.bounds();
+    let (turtle_width, turtle_height, min_x, min_y) = turtle.inner().bounds();
 
     // We add some padding to the width reported by our turtle to make
     // our final image look a little nicer.
@@ -69,7 +70,7 @@ fn main() {
     let yp = |y: i32| -> u32 { (height as i64 - (y - min_y + padding as i32) as i64) as u32 };
 
     // Draw the lines
-    for (x1, y1, x2, y2) in turtle.lines() {
+    for (x1, y1, x2, y2) in turtle.inner().lines() {
         draw_line_mut(
             &mut buffer,
             xp(*x1),
