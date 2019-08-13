@@ -1,6 +1,6 @@
 use dcc_lsystem::image::{draw_line_mut, fill_mut};
 use dcc_lsystem::lattice::{Lattice, LatticeTurtle};
-use dcc_lsystem::turtle::{Turtle};
+use dcc_lsystem::turtle::Turtle;
 use dcc_lsystem::{constant, variable, LSystemBuilder};
 use image::{ImageBuffer, Rgb};
 use std::f32::consts::FRAC_PI_3;
