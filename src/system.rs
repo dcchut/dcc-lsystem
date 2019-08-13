@@ -65,17 +65,23 @@ pub struct LSystem {
     axiom: Vec<ArenaId>,
     rules_map: HashMap<ArenaId, Vec<ArenaId>>,
     state: Vec<ArenaId>,
+    steps: usize,
 }
 
 impl LSystem {
     /// Create a new instance of `LSystem`.  In general you should avoid using this
     /// and use an `LSystemBuilder` instead.
-    pub fn new(arena: Arena<Token>, axiom: Vec<ArenaId>, rules_map: HashMap<ArenaId, Vec<ArenaId>>) -> Self {
+    pub fn new(
+        arena: Arena<Token>,
+        axiom: Vec<ArenaId>,
+        rules_map: HashMap<ArenaId, Vec<ArenaId>>,
+    ) -> Self {
         Self {
             arena,
             axiom: axiom.clone(),
             rules_map,
             state: axiom,
+            steps: 0,
         }
     }
 
@@ -103,6 +109,7 @@ impl LSystem {
     /// ```
     pub fn reset(&mut self) {
         self.state = self.axiom.clone();
+        self.steps = 0;
     }
 
     /// Iterate the system a single step.
@@ -114,6 +121,7 @@ impl LSystem {
         }
 
         self.state = next_state;
+        self.steps += 1;
     }
 
     /// Iterate the system by `n` steps.
@@ -123,6 +131,11 @@ impl LSystem {
         }
     }
 
+    /// Returns the number of iterations the system has undergone so far
+    pub fn steps(&self) -> usize {
+        self.steps
+    }
+
     /// Returns the current state of the system as a `String`.
     pub fn render(&self) -> String {
         self.state
@@ -130,5 +143,10 @@ impl LSystem {
             .map(|id| self.arena.get(*id).unwrap().name().clone())
             .collect::<Vec<_>>()
             .join("")
+    }
+
+    /// Returns the current state of the system.
+    pub fn get_state(&self) -> &[ArenaId] {
+        &self.state
     }
 }

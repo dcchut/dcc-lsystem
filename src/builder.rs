@@ -1,6 +1,6 @@
-use crate::token::{Token, TokenType};
 use crate::arena::{Arena, ArenaId};
 use crate::system::LSystem;
+use crate::token::{Token, TokenType};
 
 use std::collections::HashMap;
 
@@ -18,7 +18,6 @@ impl TransformationRule {
         }
     }
 }
-
 
 #[derive(Default, Clone)]
 pub struct LSystemBuilder {
@@ -84,28 +83,23 @@ impl LSystemBuilder {
         // contributes exactly one rule, so we check for that here.
         assert_eq!(self.arena.len(), rules_map.len());
 
-        LSystem::new(
-            self.arena,
-            axiom,
-            rules_map
-        )
+        LSystem::new(self.arena, axiom, rules_map)
     }
 }
 
 #[macro_export]
 macro_rules! variable {
-        ( $x:expr, $y:expr ) => {
-            $x.token($y, $crate::TokenType::Variable)
-        }
+    ( $x:expr, $y:expr ) => {
+        $x.token($y, $crate::TokenType::Variable)
+    };
 }
 
 #[macro_export]
 macro_rules! constant {
-        ( $x:expr, $y:expr ) => {
-            $x.token($y, $crate::TokenType::Constant)
-        }
+    ( $x:expr, $y:expr ) => {
+        $x.token($y, $crate::TokenType::Constant)
+    };
 }
-
 
 fn build_rules_string(rules: &[TransformationRule], arena: &Arena<Token>) -> String {
     let mut st = Vec::new();

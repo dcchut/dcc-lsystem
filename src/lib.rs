@@ -89,10 +89,13 @@ pub mod builder;
 pub mod system;
 pub mod token;
 
+pub mod image;
+pub mod turtle;
+
 #[cfg(test)]
 mod tests;
 
 pub use arena::{Arena, ArenaId};
 pub use builder::LSystemBuilder;
-pub use token::TokenType;
 pub use system::LSystem;
+pub use token::TokenType;
