@@ -1,7 +1,7 @@
+use image::{ImageBuffer, Rgb};
+
 use dcc_lsystem::image::fill_mut;
 use dcc_lsystem::{variable, LSystemBuilder};
-
-use image::{ImageBuffer, Rgb};
 
 fn main() {
     let mut builder = LSystemBuilder::new();

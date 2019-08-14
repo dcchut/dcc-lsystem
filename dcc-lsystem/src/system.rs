@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use crate::arena::{Arena, ArenaId};
 use crate::token::Token;
-use std::collections::HashMap;
 
 /// An L-system.
 ///

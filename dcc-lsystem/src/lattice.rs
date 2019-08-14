@@ -1,5 +1,6 @@
-use crate::turtle::{BaseTurtle, Turtle};
 use std::f32::consts::FRAC_PI_3;
+
+use crate::turtle::{BaseTurtle, MovingTurtle, Stack};
 
 pub struct Lattice {
     x_direction: (f32, f32),
@@ -27,6 +28,7 @@ pub struct LatticeTurtle {
     lattice: Lattice,
     x: i32,
     y: i32,
+    stack: Vec<(i32, i32)>,
 }
 
 impl LatticeTurtle {
@@ -36,6 +38,7 @@ impl LatticeTurtle {
             lattice,
             x: 0,
             y: 0,
+            stack: Vec::new(),
         }
     }
 
@@ -46,17 +49,19 @@ impl LatticeTurtle {
 
     /// Creates an equiangular lattice.
     pub fn equiangular() -> Self {
-        Self::new( Lattice::new(
-            (1.0, 0.0),
-            (
-                (FRAC_PI_3).cos(),
-                (FRAC_PI_3).sin(),
-            ),
-        ))
+        Self::by_angle(FRAC_PI_3)
+    }
+
+    /// Creates a turtle based on a lattice where the angle between the two basis vectors
+    /// is `angle` (in radians).
+    pub fn by_angle(angle: f32) -> Self {
+        Self::new(Lattice::new((1.0, 0.0), (angle.cos(), angle.sin())))
     }
 }
 
-impl Turtle<(i32, i32)> for LatticeTurtle {
+impl MovingTurtle for LatticeTurtle {
+    type Item = (i32, i32);
+
     fn inner(&self) -> &BaseTurtle {
         &self.inner
     }
@@ -78,5 +83,17 @@ impl Turtle<(i32, i32)> for LatticeTurtle {
         // update our coordinates wrt. the lattice
         self.x += dx;
         self.y += dy;
+    }
+}
+
+impl Stack for LatticeTurtle {
+    fn push(&mut self) {
+        self.stack.push((self.x, self.y));
+    }
+
+    fn pop(&mut self) {
+        let (x, y) = self.stack.pop().expect("Called pop on empty stack");
+        self.x = x;
+        self.y = y;
     }
 }

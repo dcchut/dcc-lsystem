@@ -1,13 +1,5 @@
-[package]
-name = "dcc-lsystem"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/dcchut/dcc-lsystem"
-description = "An implementation of a Lindenmayer system"
-version = "0.3.0"
-authors = ["Robert Usher <266585+dcchut@users.noreply.github.com>"]
-edition = "2018"
-readme = "README.md"
-
-[dependencies]
-image = "0.21.2"
-imageproc = "0.18.0"
+[workspace]
+members = [
+    "dcc-lsystem",
+    "dcc-lsystem-derive",
+]

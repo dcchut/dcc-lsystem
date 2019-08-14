@@ -1,8 +1,8 @@
+use std::collections::HashMap;
+
 use crate::arena::{Arena, ArenaId};
 use crate::system::LSystem;
 use crate::token::{Token, TokenType};
-
-use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 struct TransformationRule {

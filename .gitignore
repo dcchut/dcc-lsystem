@@ -1,4 +1,6 @@
 /target
+/dcc-lsystem/target
+/dcc-lsystem-derive/target
 **/*.rs.bk
 .idea/
 minrs.iml

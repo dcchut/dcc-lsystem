@@ -21,13 +21,15 @@ use std::f32::consts::FRAC_PI_2;
 /// The following `DumbTurtle` only moves to the right.
 ///
 /// ```rust
-/// use dcc_lsystem::turtle::{BaseTurtle, Turtle};
+/// use dcc_lsystem::turtle::{BaseTurtle, MovingTurtle};
 ///
 /// struct DumbTurtle {
 ///     inner: BaseTurtle,
 /// }
 ///
-/// impl Turtle<i32> for DumbTurtle {
+/// impl MovingTurtle for DumbTurtle {
+///     type Item = i32;
+///
 ///     fn inner(&self) -> &BaseTurtle {
 ///         &self.inner
 ///     }
@@ -41,7 +43,10 @@ use std::f32::consts::FRAC_PI_2;
 ///     }
 /// }
 /// ```
-pub trait Turtle<T> {
+///
+pub trait MovingTurtle {
+    type Item;
+
     /// Returns a reference to the wrapped `BaseTurtle`.
     fn inner(&self) -> &BaseTurtle;
 
@@ -49,7 +54,67 @@ pub trait Turtle<T> {
     fn inner_mut(&mut self) -> &mut BaseTurtle;
 
     /// Moves the turtle forward by `distance`.
-    fn forward(&mut self, distance: T);
+    fn forward(&mut self, distance: Self::Item);
+}
+
+/// This trait indicates that the implementor contains a turtle for us to play with.
+///
+/// It's a bit annoying to have to implement this trait everywhere, so using the `dcc-lsystem-derive`
+/// crate you can do the following:
+///
+/// ```rust
+/// use dcc_lsystem::turtle::{SimpleTurtle, TurtleContainer};
+/// use dcc_lsystem_derive::TurtleContainer;
+///
+/// #[derive(TurtleContainer)]
+/// struct BasicContainer {
+///     #[turtle]
+///     inner : SimpleTurtle,
+///
+///     /* <----- some other fields ----- */
+/// }
+/// ```
+///
+/// which is roughly equivalent to the following:
+///
+/// ```rust
+/// use dcc_lsystem::turtle::{SimpleTurtle, TurtleContainer, MovingTurtle};
+///
+/// struct BasicContainer {
+///     inner : SimpleTurtle,
+///
+///     /* <----- some other fields ----- */
+/// }
+///
+/// impl TurtleContainer for BasicContainer {
+///     type Item = <SimpleTurtle as MovingTurtle>::Item;
+///
+///     fn inner(&self) -> &MovingTurtle<Item = Self::Item> {
+///         &self.inner
+///     }
+/// }
+///```
+pub trait TurtleContainer {
+    type Item;
+
+    fn inner(&self) -> &dyn MovingTurtle<Item = Self::Item>;
+}
+
+/// Every turtle contains a turtle
+impl<T> TurtleContainer for MovingTurtle<Item = T> {
+    type Item = T;
+
+    fn inner(&self) -> &dyn MovingTurtle<Item = Self::Item> {
+        self
+    }
+}
+
+pub trait Stack: MovingTurtle {
+    /// Push the current state of this turtle onto a stack
+    fn push(&mut self);
+
+    /// Pop the current state of this turtle onto a stack
+    fn pop(&mut self);
 }
 
 #[derive(Clone, Debug)]
@@ -199,14 +264,14 @@ impl Heading {
 }
 
 #[derive(Clone, Debug)]
-pub struct StackTurtle {
+pub struct SimpleTurtle {
     turtle: BaseTurtle,
     heading: f32,
     stack: Vec<(i32, i32, f32)>,
     pen_down: bool,
 }
 
-impl StackTurtle {
+impl SimpleTurtle {
     /// Return a new `StackTurtle` instance.
     pub fn new() -> Self {
         Self {
@@ -215,20 +280,6 @@ impl StackTurtle {
             stack: Vec::new(),
             pen_down: true,
         }
-    }
-
-    /// Pushes the current position and heading of the turtle onto the stack.
-    pub fn push(&mut self) {
-        self.stack
-            .push((self.turtle.x(), self.turtle.y(), self.heading));
-    }
-
-    /// Pops the position and heading off the stack.
-    pub fn pop(&mut self) {
-        let (x, y, heading) = self.stack.pop().expect("Called pop on empty stack");
-
-        self.turtle.set_position(x, y);
-        self.heading = heading;
     }
 
     /// Turns the turtle left by the given angle (in radians).
@@ -247,7 +298,25 @@ impl StackTurtle {
     }
 }
 
-impl Turtle<i32> for StackTurtle {
+impl Stack for SimpleTurtle {
+    /// Pushes the current position and heading of the turtle onto the stack.
+    fn push(&mut self) {
+        self.stack
+            .push((self.turtle.x(), self.turtle.y(), self.heading));
+    }
+
+    /// Pops the position and heading off the stack.
+    fn pop(&mut self) {
+        let (x, y, heading) = self.stack.pop().expect("Called pop on empty stack");
+
+        self.turtle.set_position(x, y);
+        self.heading = heading;
+    }
+}
+
+impl MovingTurtle for SimpleTurtle {
+    type Item = i32;
+
     fn inner(&self) -> &BaseTurtle {
         &self.turtle
     }
@@ -266,7 +335,7 @@ impl Turtle<i32> for StackTurtle {
     }
 }
 
-impl Default for StackTurtle {
+impl Default for SimpleTurtle {
     fn default() -> Self {
         Self::new()
     }
