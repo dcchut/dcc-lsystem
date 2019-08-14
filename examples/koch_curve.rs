@@ -72,5 +72,5 @@ fn main() {
 
     buffer
         .save("koch_curve.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to koch_curve.png");
 }

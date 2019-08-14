@@ -91,5 +91,5 @@ fn main() {
 
     buffer
         .save("sierpinski_arrowhead.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to sierpinski_arrowhead.png");
 }

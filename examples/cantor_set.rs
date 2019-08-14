@@ -66,5 +66,5 @@ fn main() {
 
     buffer
         .save("cantor_set.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to cantor_set.png");
 }

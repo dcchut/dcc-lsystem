@@ -84,5 +84,5 @@ fn main() {
 
     buffer
         .save("fractal_binary_tree.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to fractal_binary_tree.png");
 }

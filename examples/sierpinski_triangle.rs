@@ -85,5 +85,5 @@ fn main() {
 
     buffer
         .save("sierpinski_triangle.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to sierpinski_triangle.png");
 }

@@ -78,5 +78,5 @@ fn main() {
 
     buffer
         .save("dragon_curve.png")
-        .expect("Failed to save to output.png");
+        .expect("Failed to save to dragon_curve.png");
 }
