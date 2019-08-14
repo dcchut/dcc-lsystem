@@ -1,4 +1,5 @@
 use crate::turtle::{BaseTurtle, Turtle};
+use std::f32::consts::FRAC_PI_3;
 
 pub struct Lattice {
     x_direction: (f32, f32),
@@ -38,8 +39,20 @@ impl LatticeTurtle {
         }
     }
 
+    /// Creates a grid-based latttice
     pub fn grid() -> Self {
         Self::new(Lattice::new((1.0, 0.0), (0.0, 1.0)))
+    }
+
+    /// Creates an equiangular lattice.
+    pub fn equiangular() -> Self {
+        Self::new( Lattice::new(
+            (1.0, 0.0),
+            (
+                (FRAC_PI_3).cos(),
+                (FRAC_PI_3).sin(),
+            ),
+        ))
     }
 }
 

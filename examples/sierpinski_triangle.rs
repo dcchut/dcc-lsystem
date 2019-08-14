@@ -1,9 +1,8 @@
 use dcc_lsystem::image::{draw_line_mut, fill_mut};
-use dcc_lsystem::lattice::{Lattice, LatticeTurtle};
+use dcc_lsystem::lattice::LatticeTurtle;
 use dcc_lsystem::turtle::Turtle;
 use dcc_lsystem::{constant, variable, LSystemBuilder};
 use image::{ImageBuffer, Rgb};
-use std::f32::consts::FRAC_PI_3;
 
 fn main() {
     let mut builder = LSystemBuilder::new();
@@ -21,20 +20,12 @@ fn main() {
     let mut system = builder.finish();
     system.step_by(6);
 
-    let line_length = 200.0;
+    let line_length = 200;
     let thickness = 6.0;
     let mut current_angle = 0;
     let padding: u32 = 20;
 
-    let lattice = Lattice::new(
-        (line_length, 0.0),
-        (
-            line_length * (FRAC_PI_3).cos(),
-            line_length * (FRAC_PI_3).sin(),
-        ),
-    );
-
-    let mut turtle = LatticeTurtle::new(lattice);
+    let mut turtle = LatticeTurtle::equiangular();
 
     for token in system.get_state() {
         if *token == p {
@@ -56,7 +47,7 @@ fn main() {
                 _ => panic!(),
             };
 
-            turtle.forward((dx, dy));
+            turtle.forward((line_length * dx, line_length * dy));
         }
     }
 
