@@ -24,7 +24,7 @@ this system produces the following output:
 Put the following in your `Cargo.toml`:
 
 ```toml
-dcc-lsystem = "0.3.0"
+dcc-lsystem = "0.4.0"
 ```
 
 An L-system is represented in this crate by an instance of `LSystem`.  The suggested method for constructing an `LSystem`
@@ -61,6 +61,26 @@ assert_eq!(system.render(), "ABA");
 system.step_by(5);
 assert_eq!(system.render(), "ABAABABAABAABABAABABAABAABABAABAAB");
 ```
+
+## Examples
+
+The following examples are located in `dcc-lsystem/examples`.
+
+#### Sierpinski Arrowhead
+
+![Sierpinski Arrowhead](https://user-images.githubusercontent.com/266585/62997521-73583380-be1d-11e9-8451-5ebf32216550.png)
+
+#### Koch curve
+
+![Koch curve](https://user-images.githubusercontent.com/266585/62997274-90403700-be1c-11e9-9f80-80968e265a8f.png)
+
+#### Dragon curve
+
+![Dragon curve](https://user-images.githubusercontent.com/266585/62997357-d5646900-be1c-11e9-8c24-c7da5958ef48.png)
+
+#### Fractal plant
+
+![Fractal plant](https://user-images.githubusercontent.com/266585/62997436-21afa900-be1d-11e9-8222-dfdc2ef18b72.png)
 
 ### License
 

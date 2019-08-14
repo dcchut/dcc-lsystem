@@ -25,7 +25,7 @@ this system produces the following output:
 Put the following in your `Cargo.toml`:
 
 ```toml
-dcc-lsystem = "0.3.0"
+dcc-lsystem = "0.4.0"
 ```
 
 An L-system is represented in this crate by an instance of [`LSystem`].  The suggested method for constructing an [`LSystem`]
