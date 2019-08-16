@@ -48,7 +48,8 @@ pub fn draw_line_mut(
         if x1 == x2 {
             FRAC_PI_2
         } else {
-            (((y2 - y1) / (x2 - x1)) as f32).atan()
+            ((y2 as i64 - y1 as i64) as f64 / (x2 as i64 - x1 as i64) as f64).atan() as f32
+            //((y2 as u64 - y1 as u64) / (x2 as u64 - x1 as u64)) as f32).atan()
         }
     };
 
@@ -77,6 +78,16 @@ pub fn draw_line_mut(
 
     // Now we just draw the line
     draw_convex_polygon_mut(buffer, &[p1, p3, p4, p2], color);
-    draw_filled_circle_mut(buffer, (x1 as i32, y1 as i32), thickness as i32, color);
-    draw_filled_circle_mut(buffer, (x2 as i32, y2 as i32), thickness as i32, color);
+    draw_filled_circle_mut(
+        buffer,
+        (x1 as i32, y1 as i32),
+        (thickness / 1.5) as i32,
+        color,
+    );
+    draw_filled_circle_mut(
+        buffer,
+        (x2 as i32, y2 as i32),
+        (thickness / 1.5) as i32,
+        color,
+    );
 }

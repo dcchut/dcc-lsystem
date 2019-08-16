@@ -2,13 +2,13 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 
-use syn::{Data, DeriveInput, Fields, parse_macro_input};
+use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 use quote::quote;
 
 #[proc_macro_derive(TurtleContainer, attributes(turtle))]
 pub fn derive_helper_attr(input: TokenStream) -> TokenStream {
-    let input : DeriveInput = parse_macro_input!(input as DeriveInput);
+    let input: DeriveInput = parse_macro_input!(input as DeriveInput);
     let mut gen = None;
 
     if let Data::Struct(ref data) = input.data {
@@ -41,4 +41,3 @@ pub fn derive_helper_attr(input: TokenStream) -> TokenStream {
         TokenStream::new()
     }
 }
-

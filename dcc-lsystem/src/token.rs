@@ -1,37 +1,19 @@
 use crate::arena::{Arena, ArenaId};
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum TokenType {
-    Variable,
-    Constant,
-}
-
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Token {
     name: String,
-    token_type: TokenType,
 }
 
 impl Token {
-    pub fn new<T: Into<String>>(name: T, token_type: TokenType) -> Self {
-        Self {
-            name: name.into(),
-            token_type,
-        }
-    }
+    pub fn new<T: Into<String>>(name: T) -> Self {
+        let name = name.into();
 
-    pub fn is_variable(&self) -> bool {
-        match &self.token_type {
-            TokenType::Variable => true,
-            _ => false,
+        if name.contains(" ") {
+            panic!("Token name may not contain whitespace");
         }
-    }
 
-    pub fn is_constant(&self) -> bool {
-        match &self.token_type {
-            TokenType::Constant => true,
-            _ => false,
-        }
+        Self { name }
     }
 
     pub fn name(&self) -> &String {

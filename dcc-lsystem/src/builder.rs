@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::arena::{Arena, ArenaId};
 use crate::system::LSystem;
-use crate::token::{Token, TokenType};
+use crate::token::Token;
 
 #[derive(Debug, Clone)]
 struct TransformationRule {
@@ -34,10 +34,8 @@ impl LSystemBuilder {
     /// Register a new token.
     ///
     /// Returns a TokenId which can be used (in this LSystem) to refer to the registered token.
-    pub fn token<S: Into<String>>(&mut self, name: S, token_type: TokenType) -> ArenaId {
-        let token = Token::new(name.into(), token_type);
-
-        self.arena.push(token)
+    pub fn token<S: Into<String>>(&mut self, name: S) -> ArenaId {
+        self.arena.push(Token::new(name))
     }
 
     /// Register a new transformation rule in this LSystem.
@@ -73,8 +71,9 @@ impl LSystemBuilder {
         }
 
         // We also add constant production rules of the form P => P.
-        for (id, token) in self.arena.enumerate() {
-            if token.is_constant() {
+        for (id, _token) in self.arena.enumerate() {
+            // no rule associated to this token, so its a constant token
+            if !rules_map.contains_key(&id) {
                 rules_map.insert(id, vec![id]);
             }
         }
@@ -85,20 +84,6 @@ impl LSystemBuilder {
 
         LSystem::new(self.arena, axiom, rules_map)
     }
-}
-
-#[macro_export]
-macro_rules! variable {
-    ( $x:expr, $y:expr ) => {
-        $x.token($y, $crate::TokenType::Variable)
-    };
-}
-
-#[macro_export]
-macro_rules! constant {
-    ( $x:expr, $y:expr ) => {
-        $x.token($y, $crate::TokenType::Constant)
-    };
 }
 
 fn build_rules_string(rules: &[TransformationRule], arena: &Arena<Token>) -> String {

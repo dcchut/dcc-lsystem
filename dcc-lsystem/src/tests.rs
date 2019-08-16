@@ -4,8 +4,8 @@ use crate::*;
 fn basic_algae_test() {
     let mut builder = LSystemBuilder::new();
 
-    let a = builder.token("A", TokenType::Variable);
-    let b = builder.token("B", TokenType::Variable);
+    let a = builder.token("A");
+    let b = builder.token("B");
 
     builder.axiom(vec![a]);
     builder.transformation_rule(a, vec![a, b]);
@@ -22,10 +22,10 @@ fn basic_algae_test() {
 fn fractal_binary_tree() {
     let mut builder = LSystemBuilder::new();
 
-    let zero = variable!(builder, "0");
-    let one = variable!(builder, "1");
-    let left_square_bracket = constant!(builder, "[");
-    let right_square_bracket = constant!(builder, "]");
+    let zero = builder.token("0");
+    let one = builder.token("1");
+    let left_square_bracket = builder.token("[");
+    let right_square_bracket = builder.token("]");
 
     builder.axiom(vec![zero]);
     builder.transformation_rule(one, vec![one, one]);
@@ -52,8 +52,8 @@ fn fractal_binary_tree() {
 fn macro_usage() {
     let mut builder = LSystemBuilder::new();
 
-    let x = variable!(builder, "X");
-    let y = variable!(builder, "Y");
+    let x = builder.token("X");
+    let y = builder.token("Y");
 
     assert_eq!(x, ArenaId(0));
     assert_eq!(y, ArenaId(1));

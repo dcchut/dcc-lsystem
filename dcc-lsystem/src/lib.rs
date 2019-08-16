@@ -84,10 +84,11 @@ dual licensed as above, without any additional terms or conditions.
 [`LSystemBuilder`]: builder/struct.LSystemBuilder.html
 */
 
+extern crate self as dcc_lsystem;
+
 pub use arena::{Arena, ArenaId};
 pub use builder::LSystemBuilder;
 pub use system::LSystem;
-pub use token::TokenType;
 
 pub mod arena;
 pub mod builder;
@@ -95,7 +96,6 @@ pub mod system;
 pub mod token;
 
 pub mod image;
-pub mod lattice;
 pub mod renderer;
 pub mod turtle;
 

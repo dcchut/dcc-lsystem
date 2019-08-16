@@ -1,5 +1,15 @@
 use std::cmp::{max, min};
+use std::collections::HashMap;
 use std::f32::consts::FRAC_PI_2;
+
+use rand::Rng;
+use regex::Regex;
+
+use dcc_lsystem_derive::TurtleContainer;
+use lazy_static::lazy_static;
+
+use crate::renderer::TurtleRenderer;
+use crate::{ArenaId, LSystem, LSystemBuilder};
 
 /// A simple trait for an integer-valued Turtle.
 ///
@@ -101,7 +111,7 @@ pub trait TurtleContainer {
 }
 
 /// Every turtle contains a turtle
-impl<T> TurtleContainer for MovingTurtle<Item = T> {
+impl<T> TurtleContainer for dyn MovingTurtle<Item = T> {
     type Item = T;
 
     fn inner(&self) -> &dyn MovingTurtle<Item = Self::Item> {
@@ -339,4 +349,207 @@ impl Default for SimpleTurtle {
     fn default() -> Self {
         Self::new()
     }
+}
+
+#[derive(TurtleContainer)]
+pub struct TurtleLSystemState {
+    angle: i32,
+    angle_stack: Vec<i32>,
+
+    #[turtle]
+    turtle: SimpleTurtle,
+}
+
+impl TurtleLSystemState {
+    pub fn new() -> Self {
+        Self {
+            angle: 0,
+            angle_stack: Vec::new(),
+            turtle: SimpleTurtle::new(),
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct TurtleLSystemBuilder {
+    builder: LSystemBuilder,
+    actions: HashMap<ArenaId, TurtleAction>,
+    tokens: HashMap<String, ArenaId>,
+    global_rotate: i32,
+}
+
+impl TurtleLSystemBuilder {
+    pub fn new() -> Self {
+        Self {
+            builder: LSystemBuilder::new(),
+            actions: HashMap::new(),
+            tokens: HashMap::new(),
+            global_rotate: 0,
+        }
+    }
+
+    pub fn rotate(&mut self, angle: i32) -> &mut Self {
+        self.global_rotate = angle;
+
+        self
+    }
+
+    pub fn token<S: Into<String>>(&mut self, token: S, action: TurtleAction) -> &mut Self {
+        let ident = token.into();
+
+        let token = self.builder.token(ident.clone());
+
+        self.tokens.insert(ident, token);
+        self.actions.insert(token, action);
+
+        self
+    }
+
+    pub fn axiom(&mut self, ident: &str) -> &mut Self {
+        let mut axiom = Vec::new();
+
+        for part in ident.split_whitespace() {
+            let token = self.get_token(part).expect("Invalid axiom");
+
+            axiom.push(token);
+        }
+
+        assert_ne!(axiom.len(), 0);
+
+        self.builder.axiom(axiom);
+
+        self
+    }
+
+    fn get_token(&self, token: &str) -> Option<ArenaId> {
+        self.tokens.get(token).cloned()
+    }
+
+    pub fn rule<'a, S: Into<&'a str>>(&mut self, rule: S) -> &mut Self {
+        let rule = rule.into();
+
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"\s*(\w)\s*=>\s*((?:\s*\S+\s*)*)\s*").unwrap();
+        }
+
+        let cap = RE.captures(rule).expect("Invalid rule");
+
+        // The LHS of our rule
+        let lhs = self
+            .get_token(&cap[1])
+            .expect(&format!("Invalid token: {}", &cap[1]));
+
+        // Construct the RHS of our rule
+        let mut rule = Vec::new();
+
+        for token in cap[2].split_whitespace() {
+            let token = self
+                .get_token(token)
+                .expect(&format!("Invalid token: {}", token));
+
+            rule.push(token);
+        }
+
+        // Add the rule to our builder
+        self.builder.transformation_rule(lhs, rule);
+
+        self
+    }
+
+    pub fn finish(self) -> (LSystem, TurtleRenderer<TurtleLSystemState>) {
+        let mut renderer = TurtleRenderer::new(TurtleLSystemState::new());
+
+        // Register the processing functions for each action
+        for (id, action) in self.actions.into_iter() {
+            match action {
+                TurtleAction::Push => {
+                    renderer.register(id, |state| {
+                        state.turtle.push();
+                        state.angle_stack.push(state.angle);
+                    });
+                }
+                TurtleAction::Pop => {
+                    renderer.register(id, |state| {
+                        state.turtle.pop();
+                        state.angle = state.angle_stack.pop().expect("Popped with empty stack");
+                    });
+                }
+                TurtleAction::Forward(distance) => {
+                    let current_global_rotate = self.global_rotate;
+
+                    renderer.register(id, move |state| {
+                        state.turtle.set_heading(
+                            ((current_global_rotate + state.angle) as f32).to_radians(),
+                        );
+                        state.turtle.forward(distance);
+                    });
+                }
+                TurtleAction::Rotate(angle) => {
+                    renderer.register(id, move |state| {
+                        state.angle = (state.angle + angle) % 360;
+                    });
+                }
+                TurtleAction::StochasticRotate(distribution) => {
+                    renderer.register(id, move |state| {
+                        state.angle = (state.angle + distribution.sample()) % 360;
+                    });
+                }
+                TurtleAction::StochasticForward(distribution) => {
+                    let current_global_rotate = self.global_rotate;
+
+                    renderer.register(id, move |state| {
+                        state.turtle.set_heading(
+                            ((current_global_rotate + state.angle) as f32).to_radians(),
+                        );
+                        state.turtle.forward(distribution.sample());
+                    });
+                }
+                TurtleAction::Nothing => {}
+            }
+        }
+
+        (self.builder.finish(), renderer)
+    }
+}
+
+pub trait Distribution: objekt::Clone {
+    fn sample(&self) -> i32;
+}
+
+#[derive(Clone)]
+pub struct Uniform {
+    lower: i32,
+    upper: i32,
+}
+
+impl Uniform {
+    pub fn new(lower: i32, upper: i32) -> Self {
+        Self { lower, upper }
+    }
+}
+
+impl Distribution for Uniform {
+    fn sample(&self) -> i32 {
+        let mut rng = rand::thread_rng();
+        rng.gen_range(self.lower, self.upper)
+    }
+}
+
+impl Distribution for i32 {
+    fn sample(&self) -> i32 {
+        *self
+    }
+}
+
+objekt::clone_trait_object!(Distribution);
+
+#[derive(Clone)]
+pub enum TurtleAction {
+    Nothing,
+    Rotate(i32),
+    Forward(i32),
+    StochasticRotate(Box<dyn Distribution>),
+    StochasticForward(Box<dyn Distribution>),
+    Push,
+    Pop,
 }

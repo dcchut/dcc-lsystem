@@ -1,13 +1,13 @@
 use image::{ImageBuffer, Rgb};
 
 use dcc_lsystem::image::fill_mut;
-use dcc_lsystem::{variable, LSystemBuilder};
+use dcc_lsystem::LSystemBuilder;
 
 fn main() {
     let mut builder = LSystemBuilder::new();
 
-    let a = variable!(builder, "A");
-    let b = variable!(builder, "B");
+    let a = builder.token("A");
+    let b = builder.token("B");
 
     builder.axiom(vec![a]);
     builder.transformation_rule(a, vec![a, b, a]);

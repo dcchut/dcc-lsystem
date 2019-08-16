@@ -7,3 +7,4 @@ minrs.iml
 Cargo.lock
 *.png
 *.tiff
+*.gif

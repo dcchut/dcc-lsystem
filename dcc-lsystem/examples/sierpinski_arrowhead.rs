@@ -1,98 +1,28 @@
-use dcc_lsystem_derive::TurtleContainer;
 use image::Rgb;
 
-use dcc_lsystem::lattice::LatticeTurtle;
-use dcc_lsystem::renderer::TurtleRenderer;
-use dcc_lsystem::turtle::MovingTurtle;
-use dcc_lsystem::{constant, variable, LSystemBuilder};
-
-#[derive(TurtleContainer)]
-struct SierpinskiArrowheadState {
-    angle: i32,
-
-    #[turtle]
-    turtle: LatticeTurtle,
-}
-
-impl SierpinskiArrowheadState {
-    pub fn new() -> Self {
-        Self {
-            angle: 0,
-            turtle: LatticeTurtle::equiangular(),
-        }
-    }
-
-    pub fn dx(&self) -> i32 {
-        match self.angle {
-            0 => 1,
-            1 => 0,
-            2 => -1,
-            3 => -1,
-            4 => 0,
-            5 => 1,
-            _ => panic!("Invalid angle encountered"),
-        }
-    }
-
-    pub fn dy(&self) -> i32 {
-        match self.angle {
-            0 => 0,
-            1 => 1,
-            2 => 1,
-            3 => 0,
-            4 => -1,
-            5 => -1,
-            _ => panic!("Invalid angle encountered"),
-        }
-    }
-}
+use dcc_lsystem::renderer::{ImageRendererOptions, Renderer};
+use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
 
 fn main() {
-    let steps = 7;
-    let line_length = 200;
-    let thickness = 8.0;
-    let padding = 20;
+    let mut builder = TurtleLSystemBuilder::new();
 
-    // Build up our LSystem
-    let mut builder = LSystemBuilder::new();
+    builder
+        .token("A", TurtleAction::Forward(200))
+        .token("B", TurtleAction::Forward(200))
+        .token("+", TurtleAction::Rotate(60))
+        .token("-", TurtleAction::Rotate(-60))
+        .axiom("A")
+        .rule("A => B - A - B")
+        .rule("B => A + B + A");
 
-    let a = variable!(builder, "A");
-    let b = variable!(builder, "B");
-    let p = constant!(builder, "+");
-    let m = constant!(builder, "-");
+    let (mut system, renderer) = builder.finish();
+    system.step_by(7);
 
-    builder.axiom(vec![a]);
-    builder.transformation_rule(a, vec![b, m, a, m, b]);
-    builder.transformation_rule(b, vec![a, p, b, p, a]);
+    let options =
+        ImageRendererOptions::new(20, 15.0, Rgb([255u8, 255u8, 255u8]), Rgb([0u8, 100u8, 0u8]));
 
-    let mut system = builder.finish();
-    system.step_by(steps);
-
-    // Set up the renderer
-    let mut renderer = TurtleRenderer::new(SierpinskiArrowheadState::new());
-
-    renderer.register(p, |state| {
-        state.angle = (state.angle + 1) % 6;
-    });
-    renderer.register(m, |state| {
-        // 5 === -1 mod 6
-        state.angle = (state.angle + 5) % 6;
-    });
-    renderer.register_multiple(&[a, b], move |state| {
-        state
-            .turtle
-            .forward((line_length * state.dx(), line_length * state.dy()));
-    });
-
-    // Render the resulting image based on the LSystem's state
     renderer
-        .render(
-            &system,
-            padding,
-            thickness,
-            Rgb([255u8, 255u8, 255u8]),
-            Rgb([0u8, 100u8, 0u8]),
-        )
+        .render(&system, &options)
         .save("sierpinski_arrowhead.png")
         .expect("Failed to save to sierpinski_arrowhead.png");
 }
