@@ -73,9 +73,7 @@ impl LSystemBuilder {
         // We also add constant production rules of the form P => P.
         for (id, _token) in self.arena.enumerate() {
             // no rule associated to this token, so its a constant token
-            if !rules_map.contains_key(&id) {
-                rules_map.insert(id, vec![id]);
-            }
+            rules_map.entry(id).or_insert_with(|| vec![id]);
         }
 
         // If we set our system up correctly, it should be that each token

@@ -22,11 +22,6 @@ use crate::{ArenaId, LSystem, LSystemBuilder};
 /// for keeping track of the turtle's heading, and `forward` should move your turtle
 /// in that direction (using `self.inner_mut().delta_move(dx, dy)`).
 ///
-/// # Future
-///
-/// In the future the `Turtle` trait may be modified by the addition of a set_heading()
-/// method generic over some `Heading` trait.
-///
 /// # Example
 /// The following `DumbTurtle` only moves to the right.
 ///
@@ -110,7 +105,7 @@ pub trait TurtleContainer {
     fn inner(&self) -> &dyn MovingTurtle<Item = Self::Item>;
 }
 
-/// Every turtle contains a turtle
+/// Every turtle contains a turtle.
 impl<T> TurtleContainer for dyn MovingTurtle<Item = T> {
     type Item = T;
 
@@ -120,10 +115,10 @@ impl<T> TurtleContainer for dyn MovingTurtle<Item = T> {
 }
 
 pub trait Stack: MovingTurtle {
-    /// Push the current state of this turtle onto a stack
+    /// Push the current state of this turtle onto a stack.
     fn push(&mut self);
 
-    /// Pop the current state of this turtle onto a stack
+    /// Pop the current state of this turtle onto a stack.
     fn pop(&mut self);
 }
 
@@ -231,6 +226,7 @@ impl Default for BaseTurtle {
     }
 }
 
+/// Represents the cardinal directions.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Heading {
     North,
@@ -273,6 +269,13 @@ impl Heading {
     }
 }
 
+/// A simple turtle implementation.  It has the following features:
+///
+/// * You can change direction! (`turtle.set_heading(f32)`, `turtle.left(f32)`, and `turtle.right(f32)`)
+/// * You can make it move! (`turtle.forward(i32)`)
+/// * Stacks! (`turtle.push()` and `turtle.pop()`)
+///
+/// and some other features.
 #[derive(Clone, Debug)]
 pub struct SimpleTurtle {
     turtle: BaseTurtle,
@@ -351,6 +354,8 @@ impl Default for SimpleTurtle {
     }
 }
 
+/// The state modified by a `TurtleLSystemRenderer`.  Each `TurtleAction` corresponds
+/// to a modifier of the form `Fn(&mut TurtleLSystemState)`.
 #[derive(TurtleContainer)]
 pub struct TurtleLSystemState {
     angle: i32,
@@ -361,6 +366,7 @@ pub struct TurtleLSystemState {
 }
 
 impl TurtleLSystemState {
+    /// Create a new state.
     pub fn new() -> Self {
         Self {
             angle: 0,
@@ -370,6 +376,14 @@ impl TurtleLSystemState {
     }
 }
 
+impl Default for TurtleLSystemState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// A `TurtleLSystemBuilder` is used to generate an L-system and a turtle
+/// based renderer based don this L-system.
 #[derive(Clone)]
 pub struct TurtleLSystemBuilder {
     builder: LSystemBuilder,
@@ -379,6 +393,7 @@ pub struct TurtleLSystemBuilder {
 }
 
 impl TurtleLSystemBuilder {
+    /// Create a new `TurtleLSystemBuilder` instance.
     pub fn new() -> Self {
         Self {
             builder: LSystemBuilder::new(),
@@ -388,12 +403,15 @@ impl TurtleLSystemBuilder {
         }
     }
 
+    /// Apply a global rotation to the builder.  This is useful for modifying the orientation
+    /// of the data passed to a `Renderer`.
     pub fn rotate(&mut self, angle: i32) -> &mut Self {
         self.global_rotate = angle;
 
         self
     }
 
+    /// Associate a token and corresponding action to this builder.
     pub fn token<S: Into<String>>(&mut self, token: S, action: TurtleAction) -> &mut Self {
         let ident = token.into();
 
@@ -405,6 +423,7 @@ impl TurtleLSystemBuilder {
         self
     }
 
+    /// Set the axiom  for this builder.
     pub fn axiom(&mut self, ident: &str) -> &mut Self {
         let mut axiom = Vec::new();
 
@@ -425,6 +444,7 @@ impl TurtleLSystemBuilder {
         self.tokens.get(token).cloned()
     }
 
+    /// Add a transformation rule to the builder.
     pub fn rule<'a, S: Into<&'a str>>(&mut self, rule: S) -> &mut Self {
         let rule = rule.into();
 
@@ -437,7 +457,7 @@ impl TurtleLSystemBuilder {
         // The LHS of our rule
         let lhs = self
             .get_token(&cap[1])
-            .expect(&format!("Invalid token: {}", &cap[1]));
+            .unwrap_or_else(|| panic!("Invalid token: {}", &cap[1]));
 
         // Construct the RHS of our rule
         let mut rule = Vec::new();
@@ -445,7 +465,7 @@ impl TurtleLSystemBuilder {
         for token in cap[2].split_whitespace() {
             let token = self
                 .get_token(token)
-                .expect(&format!("Invalid token: {}", token));
+                .unwrap_or_else(|| panic!("Invalid token: {}", token));
 
             rule.push(token);
         }
@@ -456,6 +476,8 @@ impl TurtleLSystemBuilder {
         self
     }
 
+    /// Consumes the builder, returning the generated `LSystem` and a `Renderer`
+    /// which can associate tokens in the `LSystem` to turtle actions.
     pub fn finish(self) -> (LSystem, TurtleRenderer<TurtleLSystemState>) {
         let mut renderer = TurtleRenderer::new(TurtleLSystemState::new());
 
@@ -512,10 +534,24 @@ impl TurtleLSystemBuilder {
     }
 }
 
+impl Default for TurtleLSystemBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+/// An integer-valued probability distribution.
+///
+/// We need to be able to clone Box<dyn Distribution>, so we use the wonderful
+/// `objekt` crate to allow for this.
 pub trait Distribution: objekt::Clone {
+    /// Take a sample from this distribution.
     fn sample(&self) -> i32;
 }
 
+objekt::clone_trait_object!(Distribution);
+
+/// A uniform distribution.
 #[derive(Clone)]
 pub struct Uniform {
     lower: i32,
@@ -524,6 +560,7 @@ pub struct Uniform {
 
 impl Uniform {
     pub fn new(lower: i32, upper: i32) -> Self {
+        assert!(lower <= upper);
         Self { lower, upper }
     }
 }
@@ -535,14 +572,14 @@ impl Distribution for Uniform {
     }
 }
 
+/// A constant distribution
 impl Distribution for i32 {
     fn sample(&self) -> i32 {
         *self
     }
 }
 
-objekt::clone_trait_object!(Distribution);
-
+/// The possible actions we can associate to tokens in our `LSystem`.
 #[derive(Clone)]
 pub enum TurtleAction {
     Nothing,

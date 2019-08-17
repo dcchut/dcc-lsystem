@@ -24,9 +24,8 @@ fn main() {
         4.0,
         Rgb([255u8, 255u8, 255u8]),
         Rgb([0u8, 0u8, 100u8]),
-        true
+        true,
     );
 
-    renderer
-        .render(&system, &options);
+    renderer.render(&system, &options);
 }

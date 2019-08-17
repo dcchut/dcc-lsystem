@@ -1,3 +1,5 @@
+#![allow(clippy::clone_double_ref)]
+
 use image::Rgb;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
@@ -6,14 +8,14 @@ use dcc_lsystem::renderer::ImageRendererOptions;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
 
-fn valid_rule(rule: &Vec<&str>) -> bool {
-    if rule.len() == 0 {
+fn valid_rule(rule: &[&str]) -> bool {
+    if rule.is_empty() {
         return false;
     }
 
     let r = rule.join("");
 
-    if r.contains("+-") || !r.contains("+") {
+    if r.contains("+-") || !r.contains('+') {
         return false;
     }
 

@@ -57,13 +57,22 @@ pub struct VideoRendererOptions {
     pub thickness: f32,
     pub fill_color: Rgb<u8>,
     pub line_color: Rgb<u8>,
-    pub progress_bar : bool,
+    pub progress_bar: bool,
 }
 
 impl VideoRendererOptions {
-    pub fn new<S : Into<String>>(filename: S, fps: usize, skip_by: usize, padding: u32, thickness: f32, fill_color: Rgb<u8>, line_color: Rgb<u8>, progress_bar: bool) -> Self {
+    pub fn new<S: Into<String>>(
+        filename: S,
+        fps: usize,
+        skip_by: usize,
+        padding: u32,
+        thickness: f32,
+        fill_color: Rgb<u8>,
+        line_color: Rgb<u8>,
+        progress_bar: bool,
+    ) -> Self {
         Self {
-            filename : filename.into(),
+            filename: filename.into(),
             fps,
             skip_by,
             padding,
@@ -160,9 +169,10 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         let mut absolute_frame_counter = 0;
         let total_frame_counter = self.state.inner().inner().lines().len();
 
-        let mut pb = match options.progress_bar {
-            true => Some(ProgressBar::new(total_frame_counter as u64)),
-            false => None
+        let mut pb = if options.progress_bar {
+            Some(ProgressBar::new(total_frame_counter as u64))
+        } else {
+            None
         };
 
         let dir = tempfile::tempdir().unwrap();

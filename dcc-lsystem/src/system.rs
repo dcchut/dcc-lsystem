@@ -11,13 +11,13 @@ use crate::token::Token;
 /// of Lindenmayer's system below.
 ///
 /// ```rust
-/// use dcc_lsystem::{LSystemBuilder, variable};
+/// use dcc_lsystem::LSystemBuilder;
 ///
 /// let mut builder = LSystemBuilder::new();
 ///
 /// // Set up our two tokens
-/// let a = variable!(builder, "A");
-/// let b = variable!(builder, "B");
+/// let a = builder.token("A");
+/// let b = builder.token("B");
 ///
 /// // Set the axiom
 /// builder.axiom(vec![a]);
@@ -90,14 +90,14 @@ impl LSystem {
     ///
     /// # Example
     /// ```rust
-    /// use dcc_lsystem::{LSystemBuilder, variable};
+    /// use dcc_lsystem::LSystemBuilder;
     ///
     /// let mut builder = LSystemBuilder::new();
     ///
     /// //  Create a simple L-System with one variable `A` and production rule `A -> AA`
-    /// let a = variable!(builder, "A");
+    /// let a = builder.token("A");
     /// builder.axiom(vec![a]);
-    /// builder.transformation_rule(a, vec![a,a]);
+    /// builder.transformation_rule(a, vec![a, a]);
     /// let mut system = builder.finish();
     ///
     /// // Do some work with the system
