@@ -178,9 +178,6 @@ pub trait Distribution: objekt::Clone {
 A possible implementation of a Uniform distribution (using the `rand` crate) is as follows:
 
 ```rust
-# pub trait Distribution: objekt::Clone {
-#     fn sample(&self) -> i32;
-# }
 use rand::Rng;
 
 #[derive(Clone)]
