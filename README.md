@@ -27,10 +27,10 @@ Put the following in your `Cargo.toml`:
 dcc-lsystem = "0.5.0"
 ```
 
-### [`LSystemBuilder`]
+### `LSystemBuilder`
 
-An L-system is represented by an instance of [`LSystem`].  To create a barebones [`LSystem`],
-the [`LSystemBuilder`] struct is useful.  The following example shows an implementation of
+An L-system is represented by an instance of `LSystem`.  To create a barebones `LSystem`,
+the `LSystemBuilder` struct is useful.  The following example shows an implementation of
 Lindenmayer's Algae system.
 
 ```rust
@@ -68,7 +68,7 @@ assert_eq!(system.render(), "ABAABABAABAABABAABABAABAABABAABAAB");
 
 It is possible to render an L-system into an image or gif.  Typically this is done using
 a turtle - each token in the L-system's state is associated with some movement or rotation
-(or perhaps something more complicated) of a turtle.  The [`TurtleLSystemBuilder`] struct offers
+(or perhaps something more complicated) of a turtle.  The `TurtleLSystemBuilder` struct offers
 a convenient way of constructing such renderings.
 
 ### Images

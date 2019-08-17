@@ -158,7 +158,7 @@ fn main() {
 
 Currently the following actions are available:
 
-| `TurtleAction`                             | Description                                                                             |
+| [`TurtleAction`]                             | Description                                                                             |
 |--------------------------------------------|-----------------------------------------------------------------------------------------|
 | `Nothing`                                  | The turtle does nothing.                                                                |
 | `Rotate(i32)`                              | Rotate the turtle through an angle.                                                     |
@@ -168,7 +168,7 @@ Currently the following actions are available:
 | `StochasticRotate(Box<dyn Distribution>)`  | Rotate the turtle through an angle specified by some probability distribution.          |
 | `StochasticForward(Box<dyn Distribution>)` | Move the turtle forwards through a distance specified by some probability distribution. |
 
-The `Distribution` trait is given by:
+The [`Distribution`] trait is given by:
 
 ```rust
 pub trait Distribution: objekt::Clone {
@@ -176,7 +176,7 @@ pub trait Distribution: objekt::Clone {
 }
 ```
 
-A possible implementation of a Uniform distribution (using the `rand` crate) is as follows:
+The [`Uniform`] distribution (using the `rand` crate) is implemented as follows:
 
 ```rust
 # pub trait Distribution: objekt::Clone {
@@ -243,6 +243,10 @@ dual licensed as above, without any additional terms or conditions.
 
 [`Lsystem`]: system/struct.LSystem.html
 [`LSystemBuilder`]: builder/struct.LSystemBuilder.html
+[`TurtleLSystemBuilder`]: turtle/struct.TurtleLSystemBuilder.html
+[`Distribution`]: turtle/struct.Distribution.html
+[`Uniform`]: turtle/struct.Uniform.html
+[`TurtleAction`]: turtle/enum.TurtleAction.html
 */
 
 extern crate self as dcc_lsystem;
