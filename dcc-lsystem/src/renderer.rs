@@ -6,6 +6,13 @@ use pbr::ProgressBar;
 use crate::image::{draw_line_mut, fill_mut};
 use crate::turtle::TurtleContainer;
 use crate::{ArenaId, LSystem};
+use std::path::PathBuf;
+use gifski::{Collector, CatResult};
+use std::thread;
+use std::fs::File;
+use gifski::progress::{ProgressReporter, NoProgress};
+use std::time::Duration;
+use std::io::Stdout;
 
 pub trait Renderer<S> {
     /// The output of the rendering operation
@@ -136,6 +143,32 @@ impl<Q: TurtleContainer> TurtleRenderer<Q> {
     }
 }
 
+struct Lodecoder {
+    frames: Vec<PathBuf>,
+    fps: usize,
+}
+
+impl Lodecoder {
+    pub fn new(frames: Vec<PathBuf>, fps: usize) -> Self {
+        Self {
+            frames,
+            fps,
+        }
+    }
+
+    fn total_frames(&self) -> u64 {
+        self.frames.len() as u64
+    }
+
+    fn collect(&mut self, mut dest: Collector) -> CatResult<()> {
+        for (i, frame) in self.frames.drain(..).enumerate() {
+            let delay = ((i + 1) * 100 / self.fps) - (i * 100 / self.fps); // See telecine/pulldown.
+            dest.add_frame_png_file(i, frame, delay as u16)?;
+        }
+        Ok(())
+    }
+}
+
 impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
     type Output = ();
 
@@ -223,17 +256,33 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             pb.unwrap().finish();
         }
 
-        let mut args = Vec::new();
-        args.push(String::from("-o"));
-        args.push(String::from(&options.filename));
-        args.push(String::from("--fps"));
-        args.push(options.fps.to_string());
-        args.push(format!("{}/frame*.png", dir.path().display()));
+        let settings = gifski::Settings {
+            width: None,
+            height: None,
+            quality: 100,
+            once: false,
+            fast: false
+        };
 
-        let _output = std::process::Command::new("gifski")
-            .args(&args)
-            .output()
-            .expect("failed to execute process");
+        let mut decoder = Box::new(Lodecoder::new(files, options.fps));
+
+        let mut progress: Box<dyn ProgressReporter> = if !options.progress_bar {
+            Box::new(NoProgress {})
+        } else {
+            let mut pb : ProgressBar<Stdout> = ProgressBar::new(decoder.total_frames());
+            pb.set_max_refresh_rate(Some(Duration::from_millis(250)));
+            Box::new(pb)
+        };
+
+        let (collector, writer) = gifski::new(settings).expect("Failed to initialise gifski");
+        let decode_thread = thread::spawn(move || {
+            decoder.collect(collector)
+        });
+
+        let file = File::create(&options.filename).expect("Couldn't open output file");
+        writer.write(file, &mut *progress).expect("Failed to write");
+        let _ = decode_thread.join().expect("Failed to decode");
+        progress.done(&format!("Output written to {}", options.filename));
 
         // Now delete the temporary files
         drop(dir);

@@ -24,7 +24,7 @@ this system produces the following output:
 Put the following in your `Cargo.toml`:
 
 ```toml
-dcc-lsystem = "0.5.1"
+dcc-lsystem = "0.5.2"
 ```
 
 ### `LSystemBuilder`
@@ -114,9 +114,7 @@ The resulting image is shown in the Examples section below.
 ### GIFs
 
 It is also possible to render a GIF using an L-system.  The individual frames
-of the GIF correspond to partial renderings of the L-system's state.  This is an experimental
-feature, which currently has a binary dependency on [Gifski](https://gif.ski/), which can be installed via the command
-`cargo install gifski`.  Removing this binary dependency is on the TODO list.
+of the GIF correspond to partial renderings of the L-system's state.
 
 ```rust
 use image::Rgb;
