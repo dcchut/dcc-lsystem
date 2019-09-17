@@ -1,6 +1,6 @@
 name: Rust
 
-on: [push]
+on: [push, check_suite, check_run]
 
 jobs:
   build:
