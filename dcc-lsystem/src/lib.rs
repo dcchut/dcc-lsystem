@@ -25,7 +25,7 @@ this system produces the following output:
 Put the following in your `Cargo.toml`:
 
 ```toml
-dcc-lsystem = "0.5.2"
+dcc-lsystem = "0.6.0"
 ```
 
 ### [`LSystemBuilder`]
