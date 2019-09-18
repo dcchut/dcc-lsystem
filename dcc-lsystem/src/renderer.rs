@@ -6,13 +6,13 @@ use pbr::ProgressBar;
 use crate::image::{draw_line_mut, fill_mut};
 use crate::turtle::TurtleContainer;
 use crate::{ArenaId, LSystem};
-use std::path::PathBuf;
-use gifski::{Collector, CatResult};
-use std::thread;
+use gifski::progress::{NoProgress, ProgressReporter};
+use gifski::{CatResult, Collector};
 use std::fs::File;
-use gifski::progress::{ProgressReporter, NoProgress};
-use std::time::Duration;
 use std::io::Stdout;
+use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
 
 pub trait Renderer<S> {
     /// The output of the rendering operation
@@ -68,6 +68,7 @@ pub struct VideoRendererOptions {
 }
 
 impl VideoRendererOptions {
+    #[allow(clippy::too_many_arguments)]
     pub fn new<S: Into<String>>(
         filename: S,
         fps: usize,
@@ -150,10 +151,7 @@ struct Lodecoder {
 
 impl Lodecoder {
     pub fn new(frames: Vec<PathBuf>, fps: usize) -> Self {
-        Self {
-            frames,
-            fps,
-        }
+        Self { frames, fps }
     }
 
     fn total_frames(&self) -> u64 {
@@ -261,7 +259,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             height: None,
             quality: 100,
             once: false,
-            fast: false
+            fast: false,
         };
 
         let mut decoder = Box::new(Lodecoder::new(files, options.fps));
@@ -269,15 +267,13 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         let mut progress: Box<dyn ProgressReporter> = if !options.progress_bar {
             Box::new(NoProgress {})
         } else {
-            let mut pb : ProgressBar<Stdout> = ProgressBar::new(decoder.total_frames());
+            let mut pb: ProgressBar<Stdout> = ProgressBar::new(decoder.total_frames());
             pb.set_max_refresh_rate(Some(Duration::from_millis(250)));
             Box::new(pb)
         };
 
         let (collector, writer) = gifski::new(settings).expect("Failed to initialise gifski");
-        let decode_thread = thread::spawn(move || {
-            decoder.collect(collector)
-        });
+        let decode_thread = thread::spawn(move || decoder.collect(collector));
 
         let file = File::create(&options.filename).expect("Couldn't open output file");
         writer.write(file, &mut *progress).expect("Failed to write");

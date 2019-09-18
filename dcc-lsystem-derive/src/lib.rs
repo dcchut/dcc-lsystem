@@ -1,8 +1,8 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, Data, DeriveInput, Fields};
 use quote::quote;
+use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
 #[proc_macro_derive(TurtleContainer, attributes(turtle))]
 pub fn derive_turtle_container(input: TokenStream) -> TokenStream {
