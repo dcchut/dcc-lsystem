@@ -1,17 +1,21 @@
-name: Rust
-
-on: [push, check_suite, check_run]
-
+name: Push action
+on: [push]
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        rust: [stable, nightly]
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
+    - uses: actions/checkout@master
+    - name: Fmt
+      run: cargo fmt -- --check
+    - name: Clippy
+      run: cargo clippy -- -Dwarnings
+    - name: Tests
       run: cargo test --verbose
-    - name: Rust Action
-      uses: icepuma/rust-action@1.37.0
