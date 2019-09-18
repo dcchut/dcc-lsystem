@@ -22,23 +22,69 @@ pub trait Renderer<S> {
     fn render(self, system: &LSystem, options: &S) -> Self::Output;
 }
 
-pub struct ImageRendererOptions {
-    pub padding: u32,
-    pub thickness: f32,
-    pub fill_color: Rgb<u8>,
-    pub line_color: Rgb<u8>,
+pub struct ImageRendererOptionsBuilder {
+    padding: Option<u32>,
+    thickness: Option<f32>,
+    fill_color: Option<Rgb<u8>>,
+    line_color: Option<Rgb<u8>>,
 }
 
-impl ImageRendererOptions {
-    pub fn new(padding: u32, thickness: f32, fill_color: Rgb<u8>, line_color: Rgb<u8>) -> Self {
+impl ImageRendererOptionsBuilder {
+    pub fn new() -> Self {
+        // TODO: think up some sensible options for these variables
+        // so we don't end up panicing by default
         Self {
-            padding,
-            thickness,
-            fill_color,
-            line_color,
+            padding: None,
+            thickness: None,
+            fill_color: None,
+            line_color: None,
         }
     }
 
+    pub fn padding(&mut self, padding: u32) -> &mut Self {
+        self.padding = Some(padding);
+        self
+    }
+
+    pub fn thickness(&mut self, thickness: f32) -> &mut Self {
+        self.thickness = Some(thickness);
+        self
+    }
+
+    pub fn fill_color(&mut self, fill_color: Rgb<u8>) -> &mut Self {
+        self.fill_color = Some(fill_color);
+        self
+    }
+
+    pub fn line_color(&mut self, line_color: Rgb<u8>) -> &mut Self {
+        self.line_color = Some(line_color);
+        self
+    }
+
+    pub fn build(&mut self) -> ImageRendererOptions {
+        ImageRendererOptions {
+            padding: self.padding.unwrap(),
+            thickness: self.thickness.unwrap(),
+            fill_color: self.fill_color.unwrap(),
+            line_color: self.line_color.unwrap(),
+        }
+    }
+}
+
+impl Default for ImageRendererOptionsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+pub struct ImageRendererOptions {
+    padding: u32,
+    thickness: f32,
+    fill_color: Rgb<u8>,
+    line_color: Rgb<u8>,
+}
+
+impl ImageRendererOptions {
     pub fn padding(&self) -> u32 {
         self.padding
     }
@@ -56,39 +102,135 @@ impl ImageRendererOptions {
     }
 }
 
+pub struct VideoRendererOptionsBuilder {
+    filename: Option<String>,
+    fps: Option<usize>,
+    skip_by: Option<usize>,
+    padding: Option<u32>,
+    thickness: Option<f32>,
+    fill_color: Option<Rgb<u8>>,
+    line_color: Option<Rgb<u8>>,
+    progress_bar: Option<bool>,
+}
+
+impl VideoRendererOptionsBuilder {
+    pub fn new() -> Self {
+        // TODO: think up some sensible options for these variables
+        // so we don't end up panicing by default
+        Self {
+            filename: Some(String::from("render.gif")),
+            fps: Some(20),
+            skip_by: Some(0),
+            padding: None,
+            thickness: None,
+            fill_color: None,
+            line_color: None,
+            progress_bar: Some(false),
+        }
+    }
+
+    pub fn filename<T: Into<String>>(&mut self, filename: T) -> &mut Self {
+        self.filename = Some(filename.into());
+        self
+    }
+
+    pub fn fps(&mut self, fps: usize) -> &mut Self {
+        self.fps = Some(fps);
+        self
+    }
+
+    pub fn skip_by(&mut self, skip_by: usize) -> &mut Self {
+        self.skip_by = Some(skip_by);
+        self
+    }
+
+    pub fn padding(&mut self, padding: u32) -> &mut Self {
+        self.padding = Some(padding);
+        self
+    }
+
+    pub fn thickness(&mut self, thickness: f32) -> &mut Self {
+        self.thickness = Some(thickness);
+        self
+    }
+
+    pub fn fill_color(&mut self, fill_color: Rgb<u8>) -> &mut Self {
+        self.fill_color = Some(fill_color);
+        self
+    }
+
+    pub fn line_color(&mut self, line_color: Rgb<u8>) -> &mut Self {
+        self.line_color = Some(line_color);
+        self
+    }
+
+    pub fn progress_bar(&mut self, progress_bar: bool) -> &mut Self {
+        self.progress_bar = Some(progress_bar);
+        self
+    }
+
+    pub fn build(&mut self) -> VideoRendererOptions {
+        VideoRendererOptions {
+            filename: self.filename.as_ref().unwrap().clone(),
+            fps: self.fps.unwrap(),
+            skip_by: self.skip_by.unwrap(),
+            padding: self.padding.unwrap(),
+            thickness: self.thickness.unwrap(),
+            fill_color: self.fill_color.unwrap(),
+            line_color: self.line_color.unwrap(),
+            progress_bar: self.progress_bar.unwrap(),
+        }
+    }
+}
+
+impl Default for VideoRendererOptionsBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct VideoRendererOptions {
-    pub filename: String,
-    pub fps: usize,
-    pub skip_by: usize,
-    pub padding: u32,
-    pub thickness: f32,
-    pub fill_color: Rgb<u8>,
-    pub line_color: Rgb<u8>,
-    pub progress_bar: bool,
+    filename: String,
+    fps: usize,
+    skip_by: usize,
+    padding: u32,
+    thickness: f32,
+    fill_color: Rgb<u8>,
+    line_color: Rgb<u8>,
+    progress_bar: bool,
 }
 
 impl VideoRendererOptions {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new<S: Into<String>>(
-        filename: S,
-        fps: usize,
-        skip_by: usize,
-        padding: u32,
-        thickness: f32,
-        fill_color: Rgb<u8>,
-        line_color: Rgb<u8>,
-        progress_bar: bool,
-    ) -> Self {
-        Self {
-            filename: filename.into(),
-            fps,
-            skip_by,
-            padding,
-            thickness,
-            fill_color,
-            line_color,
-            progress_bar,
-        }
+    pub fn filename(&self) -> &String {
+        &self.filename
+    }
+
+    pub fn fps(&self) -> usize {
+        self.fps
+    }
+
+    pub fn skip_by(&self) -> usize {
+        self.skip_by
+    }
+
+    pub fn padding(&self) -> u32 {
+        self.padding
+    }
+
+    pub fn thickness(&self) -> f32 {
+        self.thickness
+    }
+
+    pub fn fill_color(&self) -> Rgb<u8> {
+        self.fill_color
+    }
+
+    pub fn line_color(&self) -> Rgb<u8> {
+        self.line_color
+    }
+
+    pub fn progress_bar(&self) -> bool {
+        self.progress_bar
     }
 }
 

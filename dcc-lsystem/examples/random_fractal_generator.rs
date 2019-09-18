@@ -4,7 +4,7 @@ use image::Rgb;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 
-use dcc_lsystem::renderer::ImageRendererOptions;
+use dcc_lsystem::renderer::ImageRendererOptionsBuilder;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
 
@@ -103,12 +103,6 @@ pub fn main() {
             .token("L", TurtleAction::Rotate(25))
             .token("R", TurtleAction::Rotate(-25))
             .token("F", TurtleAction::Forward(100))
-            //.token("L", TurtleAction::StochasticRotate(Box::new(Uniform::new(60,70))))
-            //.token("L", TurtleAction::Rotate(90))
-            //.token("R", TurtleAction::StochasticRotate(Box::new(Uniform::new(-70,-60))))
-            //.token("R", TurtleAction::Rotate(-90))
-            //.token("F", TurtleAction::StochasticForward(Box::new(Uniform::new(5,10))))
-            //.token("F", TurtleAction::Forward(10))
             .token("+", TurtleAction::Push)
             .token("-", TurtleAction::Pop)
             .token("X", TurtleAction::Nothing)
@@ -120,8 +114,12 @@ pub fn main() {
         // Consume the builder to construct an LSystem and the associated renderer
         let (mut system, renderer) = builder.finish();
 
-        let options =
-            ImageRendererOptions::new(20, 1.0, Rgb([0u8, 0u8, 0u8]), Rgb([218u8, 112u8, 214u8]));
+        let options = ImageRendererOptionsBuilder::new()
+            .padding(20)
+            .thickness(1.0)
+            .fill_color(Rgb([0u8, 0u8, 0u8]))
+            .line_color(Rgb([218u8, 112u8, 214u8]))
+            .build();
 
         // Iterate the system a few times
         system.step_by(10);

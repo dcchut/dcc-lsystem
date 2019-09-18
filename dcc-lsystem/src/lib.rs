@@ -83,7 +83,7 @@ rule `F => F+F-F-F+F`. This is implemented in the following example.
 use image::Rgb;
 
 use dcc_lsystem::turtle::{TurtleLSystemBuilder, TurtleAction};
-use dcc_lsystem::renderer::{ImageRendererOptions, Renderer};
+use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
 
 let mut builder = TurtleLSystemBuilder::new();
 
@@ -97,12 +97,12 @@ builder
 let (mut system, renderer) = builder.finish();
 system.step_by(5); // Iterate our L-system 5 times
 
-let options = ImageRendererOptions::new(
-        10,  // padding
-        4.0,  // thickness
-        Rgb([255u8, 255u8, 255u8]), // fill color
-        Rgb([0u8, 0u8, 100u8]) // line color
-    ); //
+let options = ImageRendererOptionsBuilder::new()
+    .padding(10)
+    .thickness(4.0)
+    .fill_color(Rgb([255u8, 255u8, 255u8]))
+    .line_color(Rgb([0u8, 0u8, 100u8]))
+    .build();
 
 renderer
     .render(&system, &options)
@@ -120,7 +120,7 @@ of the GIF correspond to partial renderings of the L-system's state.
 ```rust,no_run
 use image::Rgb;
 
-use dcc_lsystem::renderer::{Renderer, VideoRendererOptions};
+use dcc_lsystem::renderer::{Renderer, VideoRendererOptionsBuilder};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
 
 fn main() {
@@ -136,16 +136,16 @@ fn main() {
     let (mut system, renderer) = builder.finish();
     system.step_by(5);
 
-    let options = VideoRendererOptions::new(
-        "koch_curve.gif", // filename
-        20, // FPS
-        0,  // how many frames to step by (useful for rendering long gifs)
-        10, // padding
-        4.0, // thickness
-        Rgb([255u8, 255u8, 255u8]), // fill color
-        Rgb([0u8, 0u8, 100u8]), // line color
-        true // show a progress bar while working
-    );
+    let options = VideoRendererOptionsBuilder::new()
+        .filename("koch_curve.gif")
+        .fps(20)
+        .skip_by(0)
+        .padding(10)
+        .thickness(4.0)
+        .fill_color(Rgb([255u8, 255u8, 255u8]))
+        .line_color(Rgb([0u8, 0u8, 100u8]))
+        .progress_bar(true)
+        .build();
 
     renderer
         .render(&system, &options);

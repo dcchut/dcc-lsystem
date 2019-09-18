@@ -1,6 +1,6 @@
 use image::Rgb;
 
-use dcc_lsystem::renderer::ImageRendererOptions;
+use dcc_lsystem::renderer::ImageRendererOptionsBuilder;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::TurtleAction;
 use dcc_lsystem::turtle::TurtleLSystemBuilder;
@@ -23,12 +23,12 @@ fn main() {
     let (mut system, renderer) = builder.finish();
     system.step_by(9);
 
-    let options = ImageRendererOptions::new(
-        20,
-        5.5,
-        Rgb([255u8, 255u8, 255u8]),
-        Rgb([0u8, 100u8, 100u8]),
-    );
+    let options = ImageRendererOptionsBuilder::new()
+        .padding(20)
+        .thickness(5.5)
+        .fill_color(Rgb([255u8, 255u8, 255u8]))
+        .line_color(Rgb([0u8, 100u8, 100u8]))
+        .build();
 
     renderer
         .render(&system, &options)
