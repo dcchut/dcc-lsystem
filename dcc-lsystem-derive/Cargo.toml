@@ -3,7 +3,7 @@ name = "dcc-lsystem-derive"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dcchut/dcc-lsystem"
 description = "Macro implementation of #[derive(TurtleContainer)]"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Robert Usher <266585+dcchut@users.noreply.github.com>"]
 edition = "2018"
 readme = "../README.md"
@@ -12,5 +12,5 @@ readme = "../README.md"
 proc-macro = true
 
 [dependencies]
-syn = { version = "1.0.1", features = ["extra-traits"] }
-quote = "1.0.0"
+syn = { version = "1.0", features = ["extra-traits"] }
+quote = "1.0"
