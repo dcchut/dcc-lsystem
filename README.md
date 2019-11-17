@@ -1,5 +1,8 @@
 # dcc-lsystem
 
+[![Build Status](https://travis-ci.org/dcchut/dcc-lsystem.svg?branch=master)](https://travis-ci.org/dcchut/dcc-lsystem)
+[![codecov](https://codecov.io/gh/dcchut/dcc-lsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/dcchut/dcc-lsystem)
+
 A crate for working with [Lindenmayer systems](https://en.wikipedia.org/wiki/L-system).
 
 ## Background
