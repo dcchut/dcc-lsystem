@@ -14,12 +14,12 @@ fn main() {
         .rule("F => F + F - F - F + F");
 
     let (mut system, renderer) = builder.finish();
-    system.step_by(5);
+    system.step_by(4);
 
     let options = VideoRendererOptionsBuilder::new()
         .filename("koch_curve.gif")
         .fps(20)
-        .skip_by(0)
+        .skip_by(5)
         .padding(10)
         .thickness(4.0)
         .fill_color(Rgb([255u8, 255u8, 255u8]))

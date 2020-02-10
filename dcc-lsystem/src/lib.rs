@@ -169,7 +169,7 @@ Currently the following actions are available:
 The [`Distribution`] trait is given by:
 
 ```rust
-pub trait Distribution: objekt::Clone {
+pub trait Distribution: dyn_clone:: DynClone {
     fn sample(&self) -> i32;
 }
 ```
@@ -177,7 +177,7 @@ pub trait Distribution: objekt::Clone {
 The [`Uniform`] distribution (using the `rand` crate) is implemented as follows:
 
 ```rust
-# pub trait Distribution: objekt::Clone {
+# pub trait Distribution: dyn_clone::DynClone {
 #     fn sample(&self) -> i32;
 # }
 use rand::Rng;

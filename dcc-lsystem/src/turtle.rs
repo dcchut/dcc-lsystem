@@ -543,13 +543,13 @@ impl Default for TurtleLSystemBuilder {
 /// An integer-valued probability distribution.
 ///
 /// We need to be able to clone Box<dyn Distribution>, so we use the wonderful
-/// `objekt` crate to allow for this.
-pub trait Distribution: objekt::Clone {
+/// `dyn_clone` crate to allow for this.
+pub trait Distribution: dyn_clone::DynClone {
     /// Take a sample from this distribution.
     fn sample(&self) -> i32;
 }
 
-objekt::clone_trait_object!(Distribution);
+dyn_clone::clone_trait_object!(Distribution);
 
 /// A uniform distribution.
 #[derive(Clone)]

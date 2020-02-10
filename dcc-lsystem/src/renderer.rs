@@ -303,7 +303,7 @@ impl Lodecoder {
     fn collect(&mut self, mut dest: Collector) -> CatResult<()> {
         for (i, frame) in self.frames.drain(..).enumerate() {
             let delay = ((i + 1) * 100 / self.fps) - (i * 100 / self.fps); // See telecine/pulldown.
-            dest.add_frame_png_file(i, frame, delay as u16)?;
+            dest.add_frame_png_file(i, frame, delay as f64)?;
         }
         Ok(())
     }
