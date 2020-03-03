@@ -10,7 +10,7 @@ readme = "../README.md"
 
 [dependencies]
 image = "0.23"
-imageproc = "0.19"
+imageproc = "0.20"
 regex = "1.3"
 lazy_static = "1.4"
 dcc-lsystem-derive = { version = "0.1" }
