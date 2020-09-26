@@ -351,7 +351,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         let mut workers = Vec::new();
 
         for (frame_counter, (x1, y1, x2, y2)) in
-            self.state.inner().inner().lines().into_iter().enumerate()
+            self.state.inner().inner().lines().iter().enumerate()
         {
             draw_line_mut(
                 &mut buffer,
