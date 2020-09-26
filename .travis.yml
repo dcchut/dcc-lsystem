@@ -8,6 +8,11 @@ rust:
   - beta
   - nightly
 
+before_script:
+  - PATH=$PATH:/home/travis/.cargo/bin
+  - which rustfmt || cargo install rustfmt
+  - (cargo install clippy) || true
+
 script:
   - cargo test --verbose
   - cargo fmt -- --check
