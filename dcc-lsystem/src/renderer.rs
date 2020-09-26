@@ -338,7 +338,6 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             (i64::from(height) - i64::from(y - min_y + options.padding as i32)) as u32
         };
 
-        let mut frame_counter = 0;
         let mut absolute_frame_counter = 0;
         let total_frame_counter = self.state.inner().inner().lines().len();
 
@@ -351,7 +350,9 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         let dir = tempfile::tempdir().unwrap();
         let mut workers = Vec::new();
 
-        for (x1, y1, x2, y2) in self.state.inner().inner().lines() {
+        for (frame_counter, (x1, y1, x2, y2)) in
+            self.state.inner().inner().lines().iter().enumerate()
+        {
             draw_line_mut(
                 &mut buffer,
                 xp(*x1),
@@ -382,7 +383,6 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
                     local_buffer.save(filename).unwrap();
                 }));
             }
-            frame_counter += 1;
         }
 
         for child in workers {
