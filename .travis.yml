@@ -8,6 +8,11 @@ rust:
   - beta
   - nightly
 
+script:
+  - cargo test --verbose
+  - cargo fmt -- --check
+  - cargo clippy -- -Dwarnings
+
 jobs:
   allow_failures:
     - rust: nightly
