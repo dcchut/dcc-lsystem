@@ -42,17 +42,17 @@ pub fn main() {
         let mut rng = thread_rng();
 
         // generate a random axiom
-        let axiom_length = rng.gen_range(0, 2);
+        let axiom_length = rng.gen_range(0..=2);
         let mut axiom = vec!["X"];
         let choices = ["L", "R", "F", "X", "Y"];
         let weighted_choices = [
-            ("F", rng.gen_range(1, 8)),
-            ("X", rng.gen_range(2, 4)),
-            ("Y", rng.gen_range(2, 4)),
-            ("L", rng.gen_range(2, 6)),
-            ("R", rng.gen_range(2, 6)),
-            ("+", rng.gen_range(4, 8)),
-            ("-", rng.gen_range(4, 8)),
+            ("F", rng.gen_range(1..=8)),
+            ("X", rng.gen_range(2..=4)),
+            ("Y", rng.gen_range(2..=4)),
+            ("L", rng.gen_range(2..=6)),
+            ("R", rng.gen_range(2..=6)),
+            ("+", rng.gen_range(4..=8)),
+            ("-", rng.gen_range(4..=8)),
         ];
 
         for _ in 0..axiom_length {
@@ -65,7 +65,7 @@ pub fn main() {
         while !valid_rule(&x_rule) {
             x_rule.clear();
 
-            let x_rule_length = rng.gen_range(4, 10);
+            let x_rule_length = rng.gen_range(4..=10);
 
             for _ in 0..x_rule_length {
                 x_rule.push(
@@ -83,7 +83,7 @@ pub fn main() {
         while !valid_rule(&y_rule) {
             y_rule.clear();
             // generate a random Y rule
-            let y_rule_length = rng.gen_range(4, 10);
+            let y_rule_length = rng.gen_range(4..=10);
 
             for _ in 0..y_rule_length {
                 y_rule.push(
