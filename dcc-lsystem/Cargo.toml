@@ -10,7 +10,7 @@ readme = "../README.md"
 
 [dependencies]
 image = "0.23"
-imageproc = "0.21"
+imageproc = "0.22"
 regex = "1.3"
 lazy_static = "1.4"
 dcc-lsystem-derive = { version = "0.1" }
@@ -18,6 +18,6 @@ color_quant = "1.0"
 gif = "0.11"
 tempfile = "3.1"
 pbr = "1.0"
-rand = "0.7"
+rand = "0.8"
 dyn-clone = "1.0"
 gifski = "1.0"

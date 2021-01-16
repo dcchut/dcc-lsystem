@@ -195,7 +195,7 @@ impl Uniform {
 impl Distribution for Uniform {
     fn sample(&self) -> i32 {
         let mut rng = rand::thread_rng();
-        rng.gen_range(self.lower, self.upper)
+        rng.gen_range(self.lower..=self.upper)
     }
 }
 ```
