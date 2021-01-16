@@ -401,7 +401,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             height: None,
             quality: 100,
             fast: false,
-            repeat: Repeat::Infinite
+            repeat: Repeat::Infinite,
         };
 
         let mut decoder = Box::new(Lodecoder::new(files, options.fps));

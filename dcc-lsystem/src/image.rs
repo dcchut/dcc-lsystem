@@ -1,7 +1,7 @@
 use std::f32::consts::FRAC_PI_2;
 
 use image::{ImageBuffer, Rgb};
-use imageproc::drawing::{draw_polygon_mut, draw_filled_circle_mut};
+use imageproc::drawing::{draw_filled_circle_mut, draw_polygon_mut};
 use imageproc::point::Point;
 
 ///  Modified every pixel of `buffer` to be the provided color.
