@@ -551,7 +551,7 @@ pub trait Distribution: dyn_clone::DynClone {
 
 dyn_clone::clone_trait_object!(Distribution);
 
-/// A uniform distribution.
+/// A uniform distribution on a closed interval.
 #[derive(Clone)]
 pub struct Uniform {
     lower: i32,
@@ -559,6 +559,10 @@ pub struct Uniform {
 }
 
 impl Uniform {
+    /// Creates a new uniform distribution on the interval [lower, upper].
+    ///
+    /// # Panics
+    /// Will panic is `lower` > `upper`
     pub fn new(lower: i32, upper: i32) -> Self {
         assert!(lower <= upper);
         Self { lower, upper }
@@ -568,7 +572,7 @@ impl Uniform {
 impl Distribution for Uniform {
     fn sample(&self) -> i32 {
         let mut rng = rand::thread_rng();
-        rng.gen_range(self.lower, self.upper)
+        rng.gen_range(self.lower..=self.upper)
     }
 }
 

@@ -1,7 +1,8 @@
 use std::f32::consts::FRAC_PI_2;
 
 use image::{ImageBuffer, Rgb};
-use imageproc::drawing::{draw_convex_polygon_mut, draw_filled_circle_mut, Point};
+use imageproc::drawing::{draw_polygon_mut, draw_filled_circle_mut};
+use imageproc::point::Point;
 
 ///  Modified every pixel of `buffer` to be the provided color.
 ///
@@ -38,7 +39,7 @@ pub fn draw_line_mut(
     // rectangles, so we'd need to think a little harder to use that method here.
     //
     // Instead, we compute the four vertices of our rectangle and use the
-    // the draw_convex_polygon_mut function from imageproc.  This works fairly well,
+    // the draw_polygon_mut function from imageproc.  This works fairly well,
     // though there are some noticeable issues where two lines connect.  As a workaround,
     // we also draw a circle at the start and endpoint of our line - this covers up most
     // of the badness, and gives a reasonable looking end result.
@@ -77,7 +78,7 @@ pub fn draw_line_mut(
     );
 
     // Now we just draw the line
-    draw_convex_polygon_mut(buffer, &[p1, p3, p4, p2], color);
+    draw_polygon_mut(buffer, &[p1, p3, p4, p2], color);
     draw_filled_circle_mut(
         buffer,
         (x1 as i32, y1 as i32),

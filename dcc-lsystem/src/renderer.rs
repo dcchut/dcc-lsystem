@@ -7,7 +7,7 @@ use crate::image::{draw_line_mut, fill_mut};
 use crate::turtle::TurtleContainer;
 use crate::{ArenaId, LSystem};
 use gifski::progress::{NoProgress, ProgressReporter};
-use gifski::{CatResult, Collector};
+use gifski::{CatResult, Collector, Repeat};
 use std::fs::File;
 use std::io::Stdout;
 use std::path::PathBuf;
@@ -400,8 +400,8 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             width: None,
             height: None,
             quality: 100,
-            once: false,
             fast: false,
+            repeat: Repeat::Infinite
         };
 
         let mut decoder = Box::new(Lodecoder::new(files, options.fps));
