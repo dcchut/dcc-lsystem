@@ -1,17 +1,27 @@
 use std::collections::HashMap;
 
+#[cfg(feature = "image_renderer")]
 use image::{ImageBuffer, Rgb};
+#[cfg(feature = "image_renderer")]
 use pbr::ProgressBar;
 
+#[cfg(feature = "image_renderer")]
 use crate::image::{draw_line_mut, fill_mut};
 use crate::turtle::TurtleContainer;
 use crate::{ArenaId, LSystem};
+#[cfg(feature = "image_renderer")]
 use gifski::progress::{NoProgress, ProgressReporter};
+#[cfg(feature = "image_renderer")]
 use gifski::{CatResult, Collector, Repeat};
+#[cfg(feature = "image_renderer")]
 use std::fs::File;
+#[cfg(feature = "image_renderer")]
 use std::io::Stdout;
+#[cfg(feature = "image_renderer")]
 use std::path::PathBuf;
+#[cfg(feature = "image_renderer")]
 use std::thread;
+#[cfg(feature = "image_renderer")]
 use std::time::Duration;
 
 pub trait Renderer<S> {
@@ -22,6 +32,7 @@ pub trait Renderer<S> {
     fn render(self, system: &LSystem, options: &S) -> Self::Output;
 }
 
+#[cfg(feature = "image_renderer")]
 pub struct ImageRendererOptionsBuilder {
     padding: Option<u32>,
     thickness: Option<f32>,
@@ -29,10 +40,11 @@ pub struct ImageRendererOptionsBuilder {
     line_color: Option<Rgb<u8>>,
 }
 
+#[cfg(feature = "image_renderer")]
 impl ImageRendererOptionsBuilder {
     pub fn new() -> Self {
         // TODO: think up some sensible options for these variables
-        // so we don't end up panicing by default
+        // so we don't end up panicking by default
         Self {
             padding: None,
             thickness: None,
@@ -71,12 +83,14 @@ impl ImageRendererOptionsBuilder {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 impl Default for ImageRendererOptionsBuilder {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(feature = "image_renderer")]
 pub struct ImageRendererOptions {
     padding: u32,
     thickness: f32,
@@ -84,6 +98,7 @@ pub struct ImageRendererOptions {
     line_color: Rgb<u8>,
 }
 
+#[cfg(feature = "image_renderer")]
 impl ImageRendererOptions {
     pub fn padding(&self) -> u32 {
         self.padding
@@ -102,6 +117,7 @@ impl ImageRendererOptions {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 pub struct VideoRendererOptionsBuilder {
     filename: Option<String>,
     fps: Option<usize>,
@@ -113,10 +129,11 @@ pub struct VideoRendererOptionsBuilder {
     progress_bar: Option<bool>,
 }
 
+#[cfg(feature = "image_renderer")]
 impl VideoRendererOptionsBuilder {
     pub fn new() -> Self {
         // TODO: think up some sensible options for these variables
-        // so we don't end up panicing by default
+        // so we don't end up panicking by default
         Self {
             filename: Some(String::from("render.gif")),
             fps: Some(20),
@@ -183,12 +200,14 @@ impl VideoRendererOptionsBuilder {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 impl Default for VideoRendererOptionsBuilder {
     fn default() -> Self {
         Self::new()
     }
 }
 
+#[cfg(feature = "image_renderer")]
 pub struct VideoRendererOptions {
     filename: String,
     fps: usize,
@@ -200,6 +219,7 @@ pub struct VideoRendererOptions {
     progress_bar: bool,
 }
 
+#[cfg(feature = "image_renderer")]
 impl VideoRendererOptions {
     pub fn filename(&self) -> &String {
         &self.filename
@@ -286,11 +306,13 @@ impl<Q: TurtleContainer> TurtleRenderer<Q> {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 struct Lodecoder {
     frames: Vec<PathBuf>,
     fps: usize,
 }
 
+#[cfg(feature = "image_renderer")]
 impl Lodecoder {
     pub fn new(frames: Vec<PathBuf>, fps: usize) -> Self {
         Self { frames, fps }
@@ -309,6 +331,7 @@ impl Lodecoder {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
     type Output = ();
 
@@ -427,6 +450,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
     }
 }
 
+#[cfg(feature = "image_renderer")]
 impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
     type Output = ImageBuffer<Rgb<u8>, Vec<u8>>;
 
@@ -463,5 +487,36 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
         }
 
         buffer
+    }
+}
+
+#[cfg(feature = "data_renderer")]
+#[derive(Default)]
+/// A version of ImageRendererOptionsBuilder but intended for data only rendering (no image).
+/// For symmetry reasons and future proofing, it is implemented as an empty struct.
+pub struct DataRendererOptionsBuilder {}
+
+#[cfg(feature = "data_renderer")]
+impl DataRendererOptionsBuilder {
+    pub fn build(&mut self) -> DataRendererOptions {
+        DataRendererOptions {}
+    }
+}
+
+#[cfg(feature = "data_renderer")]
+/// A version of ImageRendererOptions but intended for data only rendering (no image).
+/// For symmetry reasons and future proofing, it is implemented as an empty struct.
+pub struct DataRendererOptions {}
+
+#[cfg(feature = "data_renderer")]
+impl<Q: TurtleContainer> Renderer<DataRendererOptions> for TurtleRenderer<Q> {
+    type Output = Vec<(i32, i32, i32, i32)>;
+
+    fn render(mut self, system: &LSystem, _options: &DataRendererOptions) -> Self::Output {
+        // Setup our state machine based on the LSystem state
+        self.compute(system.get_state());
+
+        // TODO: find a way to move lines() instead of cloning it with to_vec()
+        self.state.inner().inner().lines().to_vec()
     }
 }
