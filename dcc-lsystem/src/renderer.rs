@@ -490,25 +490,11 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
     }
 }
 
-#[cfg(feature = "data_renderer")]
-#[derive(Default)]
-/// A version of ImageRendererOptionsBuilder but intended for data only rendering (no image).
-/// For symmetry reasons and future proofing, it is implemented as an empty struct.
-pub struct DataRendererOptionsBuilder {}
-
-#[cfg(feature = "data_renderer")]
-impl DataRendererOptionsBuilder {
-    pub fn build(&mut self) -> DataRendererOptions {
-        DataRendererOptions {}
-    }
-}
-
-#[cfg(feature = "data_renderer")]
 /// A version of ImageRendererOptions but intended for data only rendering (no image).
 /// For symmetry reasons and future proofing, it is implemented as an empty struct.
+#[derive(Default)]
 pub struct DataRendererOptions {}
 
-#[cfg(feature = "data_renderer")]
 impl<Q: TurtleContainer> Renderer<DataRendererOptions> for TurtleRenderer<Q> {
     type Output = Vec<(i32, i32, i32, i32)>;
 

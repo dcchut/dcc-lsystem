@@ -1,4 +1,4 @@
-use dcc_lsystem::renderer::DataRendererOptionsBuilder;
+use dcc_lsystem::renderer::DataRendererOptions;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
 
@@ -18,8 +18,6 @@ fn main() {
     let (mut system, renderer) = builder.finish();
     system.step_by(15);
 
-    let options = DataRendererOptionsBuilder::default().build();
-
-    let rv = renderer.render(&system, &options);
-    dbg!(rv.len());
+    let rv = renderer.render(&system, &DataRendererOptions::default());
+    println!("Dragon curve builder generated {} lines", rv.len());
 }

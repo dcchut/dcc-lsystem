@@ -25,7 +25,6 @@ gifski = { version = "1.0", optional = true }
 
 [features]
 image_renderer = ["image", "imageproc", "gif", "gifski", "color_quant"]
-data_renderer = []
 default = ["image_renderer"]
 
 [[example]]
@@ -76,4 +75,3 @@ required-features = ["image_renderer"]
 [[example]]
 name = "dragon_curve_data"
 path = "examples/dragon_curve_data.rs"
-required-features = ["data_renderer"]
