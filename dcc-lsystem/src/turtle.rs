@@ -1,6 +1,4 @@
-use std::cmp::{max, min};
 use std::collections::HashMap;
-use std::f32::consts::FRAC_PI_2;
 
 use rand::Rng;
 use regex::Regex;
@@ -10,6 +8,7 @@ use lazy_static::lazy_static;
 
 use crate::renderer::TurtleRenderer;
 use crate::{ArenaId, LSystem, LSystemBuilder};
+use std::f64::consts::FRAC_PI_2;
 
 /// A simple trait for an integer-valued Turtle.
 ///
@@ -124,13 +123,13 @@ pub trait Stack: MovingTurtle {
 
 #[derive(Clone, Debug)]
 pub struct BaseTurtle {
-    x: i32,
-    y: i32,
-    lines: Vec<(i32, i32, i32, i32)>,
-    max_x: i32,
-    max_y: i32,
-    min_x: i32,
-    min_y: i32,
+    x: f64,
+    y: f64,
+    lines: Vec<(f64, f64, f64, f64)>,
+    max_x: f64,
+    max_y: f64,
+    min_x: f64,
+    min_y: f64,
     pen_down: bool,
 }
 
@@ -138,48 +137,48 @@ impl BaseTurtle {
     /// Creates a new `BaseTurtle` instance.
     pub fn new() -> Self {
         Self {
-            x: 0,
-            y: 0,
+            x: 0.0,
+            y: 0.0,
             lines: Vec::new(),
-            max_x: 0,
-            max_y: 0,
-            min_x: 0,
-            min_y: 0,
+            max_x: 0.0,
+            max_y: 0.0,
+            min_x: 0.0,
+            min_y: 0.0,
             pen_down: true,
         }
     }
 
     /// Returns the current `x` coordinate of the turtle.
-    pub fn x(&self) -> i32 {
+    pub fn x(&self) -> f64 {
         self.x
     }
 
     /// Returns the current `y` coordinate of the turtle.
-    pub fn y(&self) -> i32 {
+    pub fn y(&self) -> f64 {
         self.y
     }
 
     /// Returns a slice containing all the lines `(x1, y1, x2, y2)` traversed by the turtle.
-    pub fn lines(&self) -> &[(i32, i32, i32, i32)] {
+    pub fn lines(&self) -> &[(f64, f64, f64, f64)] {
         &self.lines
     }
 
     /// Set the current position of this turtle to `(x,y)`.
-    pub fn set_position(&mut self, x: i32, y: i32) {
+    pub fn set_position(&mut self, x: f64, y: f64) {
         self.x = x;
         self.y = y;
         self.update_bounds();
     }
 
     fn update_bounds(&mut self) {
-        self.min_x = min(self.min_x, self.x);
-        self.min_y = min(self.min_y, self.y);
-        self.max_x = max(self.max_x, self.x);
-        self.max_y = max(self.max_y, self.y);
+        self.min_x = self.min_x.min(self.x);
+        self.min_y = self.min_y.min(self.y);
+        self.max_x = self.max_x.max(self.x);
+        self.max_y = self.max_y.max(self.y);
     }
 
     /// Moves the turtle by `(dx,dy)`.
-    pub fn delta_move(&mut self, dx: i32, dy: i32) {
+    pub fn delta_move(&mut self, dx: f64, dy: f64) {
         let x2 = self.x + dx;
         let y2 = self.y + dy;
 
@@ -204,8 +203,8 @@ impl BaseTurtle {
         (
             (self.max_x + self.min_x.abs()) as u32,
             (self.max_y + self.min_y.abs()) as u32,
-            self.min_x,
-            self.min_y,
+            self.min_x as i32,
+            self.min_y as i32,
         )
     }
 
@@ -279,8 +278,8 @@ impl Heading {
 #[derive(Clone, Debug)]
 pub struct SimpleTurtle {
     turtle: BaseTurtle,
-    heading: f32,
-    stack: Vec<(i32, i32, f32)>,
+    heading: f64,
+    stack: Vec<(f64, f64, f64)>,
     pen_down: bool,
 }
 
@@ -296,17 +295,17 @@ impl SimpleTurtle {
     }
 
     /// Turns the turtle left by the given angle (in radians).
-    pub fn left(&mut self, angle: f32) {
+    pub fn left(&mut self, angle: f64) {
         self.heading += angle;
     }
 
     /// Turns the turtle right by the given angle (in radians).
-    pub fn right(&mut self, angle: f32) {
+    pub fn right(&mut self, angle: f64) {
         self.heading -= angle;
     }
 
     /// Set the current heading of the turtle (in radians).
-    pub fn set_heading(&mut self, heading: f32) {
+    pub fn set_heading(&mut self, heading: f64) {
         self.heading = heading;
     }
 }
@@ -339,11 +338,11 @@ impl MovingTurtle for SimpleTurtle {
     }
 
     fn forward(&mut self, distance: i32) {
-        let dx = self.heading.cos() * distance as f32;
-        let dy = self.heading.sin() * distance as f32;
+        let dx = self.heading.cos() * (distance as f64);
+        let dy = self.heading.sin() * (distance as f64);
 
         if self.pen_down {
-            self.turtle.delta_move(dx as i32, dy as i32);
+            self.turtle.delta_move(dx, dy);
         }
     }
 }
@@ -501,7 +500,7 @@ impl TurtleLSystemBuilder {
 
                     renderer.register(id, move |state| {
                         state.turtle.set_heading(
-                            ((current_global_rotate + state.angle) as f32).to_radians(),
+                            ((current_global_rotate + state.angle) as f64).to_radians(),
                         );
                         state.turtle.forward(distance);
                     });
@@ -521,7 +520,7 @@ impl TurtleLSystemBuilder {
 
                     renderer.register(id, move |state| {
                         state.turtle.set_heading(
-                            ((current_global_rotate + state.angle) as f32).to_radians(),
+                            ((current_global_rotate + state.angle) as f64).to_radians(),
                         );
                         state.turtle.forward(distribution.sample());
                     });

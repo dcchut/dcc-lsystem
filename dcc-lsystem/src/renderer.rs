@@ -82,6 +82,12 @@ impl<Q: TurtleContainer> Renderer<DataRendererOptions> for TurtleRenderer<Q> {
         self.compute(system.get_state());
 
         // TODO: find a way to move lines() instead of cloning it with to_vec()
-        self.state.inner().inner().lines().to_vec()
+        self.state
+            .inner()
+            .inner()
+            .lines()
+            .iter()
+            .map(|(a, b, c, d)| (*a as i32, *b as i32, *c as i32, *d as i32))
+            .collect()
     }
 }

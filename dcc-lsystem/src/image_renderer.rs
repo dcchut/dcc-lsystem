@@ -293,10 +293,10 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         {
             draw_line_mut(
                 &mut buffer,
-                xp(*x1),
-                yp(*y1),
-                xp(*x2),
-                yp(*y2),
+                xp(*x1 as i32),
+                yp(*y1 as i32),
+                xp(*x2 as i32),
+                yp(*y2 as i32),
                 options.thickness,
                 options.line_color,
             );
@@ -391,10 +391,10 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
         for (x1, y1, x2, y2) in self.state.inner().inner().lines() {
             draw_line_mut(
                 &mut buffer,
-                xp(*x1),
-                yp(*y1),
-                xp(*x2),
-                yp(*y2),
+                xp(*x1 as i32),
+                yp(*y1 as i32),
+                xp(*x2 as i32),
+                yp(*y2 as i32),
                 options.thickness,
                 options.line_color,
             );
