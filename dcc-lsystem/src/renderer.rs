@@ -6,6 +6,9 @@ use crate::{ArenaId, LSystem};
 #[cfg(feature = "image_renderer")]
 pub use crate::image_renderer::ImageRendererOptionsBuilder;
 
+#[cfg(feature = "image_renderer")]
+pub use crate::image_renderer::VideoRendererOptionsBuilder;
+
 pub trait Renderer<S> {
     /// The output of the rendering operation
     type Output;

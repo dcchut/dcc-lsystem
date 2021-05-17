@@ -3,7 +3,7 @@ name = "dcc-lsystem"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dcchut/dcc-lsystem"
 description = "An implementation of a Lindenmayer system together with some rendering tools"
-version = "0.6.2"
+version = "0.6.3"
 authors = ["Robert Usher <266585+dcchut@users.noreply.github.com>"]
 edition = "2018"
 readme = "../README.md"
@@ -36,8 +36,8 @@ path = "examples/dragon_curve.rs"
 required-features = ["image_renderer"]
 
 [[example]]
-name = "fractal_binary"
-path = "examples/fractal_binary.rs"
+name = "fractal_binary_tree"
+path = "examples/fractal_binary_tree.rs"
 required-features = ["image_renderer"]
 
 [[example]]
