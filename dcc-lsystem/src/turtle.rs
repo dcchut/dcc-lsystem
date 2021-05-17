@@ -32,7 +32,7 @@ use std::f64::consts::FRAC_PI_2;
 /// }
 ///
 /// impl MovingTurtle for DumbTurtle {
-///     type Item = i32;
+///     type Item = f64;
 ///
 ///     fn inner(&self) -> &BaseTurtle {
 ///         &self.inner
@@ -42,8 +42,8 @@ use std::f64::consts::FRAC_PI_2;
 ///         &mut self.inner
 ///     }
 ///
-///     fn forward(&mut self, distance: i32) {
-///         self.inner_mut().delta_move(distance, 0);
+///     fn forward(&mut self, distance: f64) {
+///         self.inner_mut().delta_move(distance, 0.0);
 ///     }
 /// }
 /// ```
