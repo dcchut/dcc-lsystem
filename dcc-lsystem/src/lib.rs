@@ -253,7 +253,10 @@ pub use system::LSystem;
 
 pub mod arena;
 pub mod builder;
+#[cfg(feature = "image_renderer")]
 pub mod image;
+#[cfg(feature = "image_renderer")]
+pub mod image_renderer;
 pub mod renderer;
 pub mod system;
 pub mod token;
