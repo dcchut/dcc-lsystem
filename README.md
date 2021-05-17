@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/dcchut/dcc-lsystem.svg?branch=master)](https://travis-ci.org/dcchut/dcc-lsystem)
 [![codecov](https://codecov.io/gh/dcchut/dcc-lsystem/branch/master/graph/badge.svg)](https://codecov.io/gh/dcchut/dcc-lsystem)
-[![dependency status](https://deps.rs/crate/dcc-lsystem/0.6.2/status.svg)](https://deps.rs/crate/dcc-lsystem/0.6.2)
+[![dependency status](https://deps.rs/crate/dcc-lsystem/0.6.3/status.svg)](https://deps.rs/crate/dcc-lsystem/0.6.3)
 
 A crate for working with [Lindenmayer systems](https://en.wikipedia.org/wiki/L-system).
 
