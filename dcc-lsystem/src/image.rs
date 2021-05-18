@@ -22,6 +22,7 @@ pub fn fill_mut(buffer: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, color: Rgb<u8>) {
     }
 }
 
+#[inline(always)]
 fn _r(x: f64) -> i32 {
     x.round() as i32
 }
@@ -61,24 +62,15 @@ pub fn draw_line_mut(
     // and the x-axis.
     let perpendicular_angle = angle + FRAC_PI_2;
 
+    let dx = thickness * perpendicular_angle.cos();
+    let dy = thickness * perpendicular_angle.sin();
+
     // We get the vertices of our rectangle by extending out in the perpendicular
     // direction from our starting point.
-    let p1 = Point::new(
-        _r(x1 + thickness * perpendicular_angle.cos()),
-        _r(y1 + thickness * perpendicular_angle.sin()),
-    );
-    let p2 = Point::new(
-        _r(x1 - thickness * perpendicular_angle.cos()),
-        _r(y1 - thickness * perpendicular_angle.sin()),
-    );
-    let p3 = Point::new(
-        _r(x2 + thickness * perpendicular_angle.cos()),
-        _r(y2 + thickness * perpendicular_angle.sin()),
-    );
-    let p4 = Point::new(
-        _r(x2 - thickness * perpendicular_angle.cos()),
-        _r(y2 - thickness * perpendicular_angle.sin()),
-    );
+    let p1 = Point::new(_r(x1 + dx), _r(y1 + dy));
+    let p2 = Point::new(_r(x1 - dx), _r(y1 - dy));
+    let p3 = Point::new(_r(x2 + dx), _r(y2 + dy));
+    let p4 = Point::new(_r(x2 - dx), _r(y2 - dy));
 
     // Now we just draw the line
     if p1 != p2 {
