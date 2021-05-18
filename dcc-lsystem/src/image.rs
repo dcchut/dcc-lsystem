@@ -1,4 +1,4 @@
-use std::f32::consts::FRAC_PI_2;
+use std::f64::consts::FRAC_PI_2;
 
 use image::{ImageBuffer, Rgb};
 use imageproc::drawing::{draw_filled_circle_mut, draw_polygon_mut};
@@ -22,14 +22,18 @@ pub fn fill_mut(buffer: &mut ImageBuffer<Rgb<u8>, Vec<u8>>, color: Rgb<u8>) {
     }
 }
 
+fn _r(x: f64) -> i32 {
+    x.round() as i32
+}
+
 /// Draws a line to `buffer` between `(x1,y1)` and `(x2,y2)`.
 pub fn draw_line_mut(
     buffer: &mut ImageBuffer<Rgb<u8>, Vec<u8>>,
-    x1: u32,
-    y1: u32,
-    x2: u32,
-    y2: u32,
-    thickness: f32,
+    x1: f64,
+    y1: f64,
+    x2: f64,
+    y2: f64,
+    thickness: f64,
     color: Rgb<u8>,
 ) {
     assert!(thickness > 0.0);
@@ -46,11 +50,10 @@ pub fn draw_line_mut(
 
     // Compute the angle between the first and second points
     let angle = {
-        if x1 == x2 {
+        if (x1 - x2).abs() < f64::EPSILON {
             FRAC_PI_2
         } else {
-            ((i64::from(y2) - i64::from(y1)) as f64 / (i64::from(x2) - i64::from(x1)) as f64).atan()
-                as f32
+            ((y2 - y1) / (x2 - x1)).atan()
         }
     };
 
@@ -61,34 +64,27 @@ pub fn draw_line_mut(
     // We get the vertices of our rectangle by extending out in the perpendicular
     // direction from our starting point.
     let p1 = Point::new(
-        (x1 as f32 + thickness * perpendicular_angle.cos()) as i32,
-        (y1 as f32 + thickness * perpendicular_angle.sin()) as i32,
+        _r(x1 + thickness * perpendicular_angle.cos()),
+        _r(y1 + thickness * perpendicular_angle.sin()),
     );
     let p2 = Point::new(
-        (x1 as f32 - thickness * perpendicular_angle.cos()) as i32,
-        (y1 as f32 - thickness * perpendicular_angle.sin()) as i32,
+        _r(x1 - thickness * perpendicular_angle.cos()),
+        _r(y1 - thickness * perpendicular_angle.sin()),
     );
     let p3 = Point::new(
-        (x2 as f32 + thickness * perpendicular_angle.cos()) as i32,
-        (y2 as f32 + thickness * perpendicular_angle.sin()) as i32,
+        _r(x2 + thickness * perpendicular_angle.cos()),
+        _r(y2 + thickness * perpendicular_angle.sin()),
     );
     let p4 = Point::new(
-        (x2 as f32 - thickness * perpendicular_angle.cos()) as i32,
-        (y2 as f32 - thickness * perpendicular_angle.sin()) as i32,
+        _r(x2 - thickness * perpendicular_angle.cos()),
+        _r(y2 - thickness * perpendicular_angle.sin()),
     );
 
     // Now we just draw the line
-    draw_polygon_mut(buffer, &[p1, p3, p4, p2], color);
-    draw_filled_circle_mut(
-        buffer,
-        (x1 as i32, y1 as i32),
-        (thickness / 1.5) as i32,
-        color,
-    );
-    draw_filled_circle_mut(
-        buffer,
-        (x2 as i32, y2 as i32),
-        (thickness / 1.5) as i32,
-        color,
-    );
+    if p1 != p2 {
+        // imageproc will panic if the first and last points in the polygon are the same.
+        draw_polygon_mut(buffer, &[p1, p3, p4, p2], color);
+    }
+    draw_filled_circle_mut(buffer, (_r(x1), _r(y1)), _r(thickness / 1.5), color);
+    draw_filled_circle_mut(buffer, (_r(x2), _r(y2)), _r(thickness / 1.5), color);
 }

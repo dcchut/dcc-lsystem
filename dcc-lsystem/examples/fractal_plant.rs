@@ -1,7 +1,9 @@
-use image::Rgb;
+use image::{ImageBuffer, Rgb};
 
+use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use std::path::Path;
 
 fn main() {
     let mut builder = TurtleLSystemBuilder::new();
@@ -28,8 +30,7 @@ fn main() {
         .line_color(Rgb([0u8, 100u8, 0u8]))
         .build();
 
-    renderer
-        .render(&system, &options)
-        .save("fractal_plant.png")
-        .expect("Failed to save fractal_plant.png");
+    let buffer: ImageBuffer<_, Vec<u8>> = renderer.render(&system, &options);
+
+    save_png(&buffer, Path::new("fractal_plant.png"));
 }

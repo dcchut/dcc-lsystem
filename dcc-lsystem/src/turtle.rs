@@ -199,12 +199,12 @@ impl BaseTurtle {
     ///
     /// This is useful for converting from turtle coordinates to a new coordinate system starting at `(0,0)`
     /// with width `total_width`, height `total_height`, and all positions have positive `x` and `y` coordinates.
-    pub fn bounds(&self) -> (u32, u32, i32, i32) {
+    pub fn bounds(&self) -> (f64, f64, f64, f64) {
         (
-            (self.max_x + self.min_x.abs()) as u32,
-            (self.max_y + self.min_y.abs()) as u32,
-            self.min_x as i32,
-            self.min_y as i32,
+            (self.max_x + self.min_x.abs()),
+            (self.max_y + self.min_y.abs()),
+            self.min_x,
+            self.min_y,
         )
     }
 
@@ -270,7 +270,7 @@ impl Heading {
 
 /// A simple turtle implementation.  It has the following features:
 ///
-/// * You can change direction! (`turtle.set_heading(f32)`, `turtle.left(f32)`, and `turtle.right(f32)`)
+/// * You can change direction! (`turtle.set_heading(f64)`, `turtle.left(f64)`, and `turtle.right(f64)`)
 /// * You can make it move! (`turtle.forward(i32)`)
 /// * Stacks! (`turtle.push()` and `turtle.pop()`)
 ///

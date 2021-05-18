@@ -75,19 +75,13 @@ impl<Q: TurtleContainer> TurtleRenderer<Q> {
 pub struct DataRendererOptions {}
 
 impl<Q: TurtleContainer> Renderer<DataRendererOptions> for TurtleRenderer<Q> {
-    type Output = Vec<(i32, i32, i32, i32)>;
+    type Output = Vec<(f64, f64, f64, f64)>;
 
     fn render(mut self, system: &LSystem, _options: &DataRendererOptions) -> Self::Output {
         // Setup our state machine based on the LSystem state
         self.compute(system.get_state());
 
         // TODO: find a way to move lines() instead of cloning it with to_vec()
-        self.state
-            .inner()
-            .inner()
-            .lines()
-            .iter()
-            .map(|(a, b, c, d)| (*a as i32, *b as i32, *c as i32, *d as i32))
-            .collect()
+        self.state.inner().inner().lines().to_vec()
     }
 }
