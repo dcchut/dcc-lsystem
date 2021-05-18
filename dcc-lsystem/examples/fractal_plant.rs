@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::Rgb;
 
 use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
@@ -30,7 +30,6 @@ fn main() {
         .line_color(Rgb([0u8, 100u8, 0u8]))
         .build();
 
-    let buffer: ImageBuffer<_, Vec<u8>> = renderer.render(&system, &options);
-
+    let buffer = renderer.render(&system, &options);
     save_png(&buffer, Path::new("fractal_plant.png"));
 }
