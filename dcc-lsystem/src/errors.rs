@@ -9,7 +9,7 @@ pub enum LSystemError {
     #[error("attempted to construct invalid token `{0}`")]
     InvalidToken(String),
     #[error("invalid arena ID `{0:?}`")]
-    InvalidArenaID(ArenaId),
+    InvalidArenaId(ArenaId),
     #[error("invalid rule `{0}`")]
     InvalidRule(String),
     #[error("axiom has not been defined")]

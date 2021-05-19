@@ -86,7 +86,7 @@ impl LSystemBuilder {
     fn validate_ids(&self, ids: &[ArenaId]) -> Result<(), LSystemError> {
         for &id in ids {
             if !self.arena.is_valid(id) {
-                return Err(LSystemError::InvalidArenaID(id));
+                return Err(LSystemError::InvalidArenaId(id));
             }
         }
 
@@ -146,6 +146,7 @@ impl LSystemBuilder {
     /// # }
     /// ```
     pub fn axiom(&mut self, axiom: Vec<ArenaId>) -> Result<(), LSystemError> {
+        self.validate_ids(axiom.as_slice())?;
         self.axiom = Some(axiom);
 
         Ok(())
@@ -229,5 +230,50 @@ impl std::fmt::Debug for LSystemBuilder {
             .field("axiom", &self.axiom)
             .field("rules", &build_rules_string(&self.rules, &self.arena))
             .finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_builder_invalid_token() -> Result<(), LSystemError> {
+        let mut builder = LSystemBuilder::new();
+
+        let _daisy = builder.token("daisy")?;
+
+        // make sure we can't add a token with a space in it
+        assert!(builder.token("space cadet").is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_builder_axiom_and_transformation_rule_errors() -> Result<(), LSystemError> {
+        let mut builder = LSystemBuilder::new();
+
+        let x = builder.token("x")?;
+        let y = builder.token("y")?;
+
+        let mut some_other_builder = LSystemBuilder::new();
+
+        // `x` won't be valid for an empty builder
+        assert!(some_other_builder.axiom(vec![x]).is_err());
+
+        let q = some_other_builder.token("q")?;
+
+        // make sure `y` still isn't valid
+        assert!(some_other_builder.axiom(vec![y]).is_err());
+
+        // similarly trying to add a transformation rule should go badly.
+        assert!(some_other_builder
+            .transformation_rule(q, vec![x, y, q])
+            .is_err());
+        assert!(some_other_builder
+            .transformation_rule(y, vec![q, q])
+            .is_err());
+
+        Ok(())
     }
 }
