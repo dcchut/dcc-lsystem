@@ -1,8 +1,10 @@
 use image::Rgb;
 
+use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::renderer::ImageRendererOptionsBuilder;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use std::path::Path;
 
 fn main() {
     let mut builder = TurtleLSystemBuilder::new();
@@ -27,8 +29,6 @@ fn main() {
         .line_color(Rgb([100u8, 0u8, 0u8]))
         .build();
 
-    renderer
-        .render(&system, &options)
-        .save("dragon_curve.png")
-        .expect("Failed to save to dragon_curve.png");
+    let buffer = renderer.render(&system, &options);
+    save_png(&buffer, Path::new("dragon_curve.png"));
 }

@@ -75,7 +75,7 @@ impl<Q: TurtleContainer> TurtleRenderer<Q> {
 pub struct DataRendererOptions {}
 
 impl<Q: TurtleContainer> Renderer<DataRendererOptions> for TurtleRenderer<Q> {
-    type Output = Vec<(i32, i32, i32, i32)>;
+    type Output = Vec<(f64, f64, f64, f64)>;
 
     fn render(mut self, system: &LSystem, _options: &DataRendererOptions) -> Self::Output {
         // Setup our state machine based on the LSystem state

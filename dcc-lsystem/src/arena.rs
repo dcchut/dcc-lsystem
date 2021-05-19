@@ -200,7 +200,8 @@ impl<T> Arena<T> {
     /// Returns an ArenaId which uniquely identifies this element of the arena.
     ///
     /// # Example
-    /// use dcc_lsystem::Arena;
+    /// ```rust
+    /// use dcc_lsystem::{Arena, ArenaId};
     ///
     /// let mut arena = Arena::new();
     /// let x = arena.push(11);

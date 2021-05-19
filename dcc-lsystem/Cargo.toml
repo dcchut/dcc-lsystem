@@ -3,7 +3,7 @@ name = "dcc-lsystem"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dcchut/dcc-lsystem"
 description = "An implementation of a Lindenmayer system together with some rendering tools"
-version = "0.6.3"
+version = "0.7.0"
 authors = ["Robert Usher <266585+dcchut@users.noreply.github.com>"]
 edition = "2018"
 readme = "../README.md"
@@ -12,7 +12,8 @@ readme = "../README.md"
 image = { version = "0.23", optional = true }
 imageproc = { version = "0.22", optional = true }
 gif = { version = "0.11", optional = true }
-gifski = { version = "1.0", optional = true }
+gifski = { version = "1.4", optional = true }
+mtpng = { version = "0.3", optional = true }
 regex = "1.5"
 lazy_static = "1.4"
 dcc-lsystem-derive = "0.1"
@@ -22,7 +23,7 @@ rand = "0.8"
 dyn-clone = "1.0"
 
 [features]
-image_renderer = ["image", "imageproc", "gif", "gifski"]
+image_renderer = ["image", "imageproc", "gif", "gifski", "mtpng"]
 default = ["image_renderer"]
 
 [[example]]

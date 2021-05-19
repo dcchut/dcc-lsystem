@@ -5,16 +5,18 @@ use crate::turtle::TurtleContainer;
 use gifski::progress::{NoProgress, ProgressReporter};
 use gifski::{CatResult, Collector, Repeat};
 use image::{ImageBuffer, Rgb};
+use mtpng::encoder::{Encoder, Options};
+use mtpng::{ColorType, Header};
 use pbr::ProgressBar;
 use std::fs::File;
 use std::io::Stdout;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::thread;
 use std::time::Duration;
 
 pub struct ImageRendererOptionsBuilder {
     padding: Option<u32>,
-    thickness: Option<f32>,
+    thickness: Option<f64>,
     fill_color: Option<Rgb<u8>>,
     line_color: Option<Rgb<u8>>,
 }
@@ -36,7 +38,7 @@ impl ImageRendererOptionsBuilder {
         self
     }
 
-    pub fn thickness(&mut self, thickness: f32) -> &mut Self {
+    pub fn thickness(&mut self, thickness: f64) -> &mut Self {
         self.thickness = Some(thickness);
         self
     }
@@ -69,7 +71,7 @@ impl Default for ImageRendererOptionsBuilder {
 
 pub struct ImageRendererOptions {
     padding: u32,
-    thickness: f32,
+    thickness: f64,
     fill_color: Rgb<u8>,
     line_color: Rgb<u8>,
 }
@@ -79,7 +81,7 @@ impl ImageRendererOptions {
         self.padding
     }
 
-    pub fn thickness(&self) -> f32 {
+    pub fn thickness(&self) -> f64 {
         self.thickness
     }
 
@@ -97,7 +99,7 @@ pub struct VideoRendererOptionsBuilder {
     fps: Option<usize>,
     skip_by: Option<usize>,
     padding: Option<u32>,
-    thickness: Option<f32>,
+    thickness: Option<f64>,
     fill_color: Option<Rgb<u8>>,
     line_color: Option<Rgb<u8>>,
     progress_bar: Option<bool>,
@@ -139,7 +141,7 @@ impl VideoRendererOptionsBuilder {
         self
     }
 
-    pub fn thickness(&mut self, thickness: f32) -> &mut Self {
+    pub fn thickness(&mut self, thickness: f64) -> &mut Self {
         self.thickness = Some(thickness);
         self
     }
@@ -184,7 +186,7 @@ pub struct VideoRendererOptions {
     fps: usize,
     skip_by: usize,
     padding: u32,
-    thickness: f32,
+    thickness: f64,
     fill_color: Rgb<u8>,
     line_color: Rgb<u8>,
     progress_bar: bool,
@@ -207,7 +209,7 @@ impl VideoRendererOptions {
         self.padding
     }
 
-    pub fn thickness(&self) -> f32 {
+    pub fn thickness(&self) -> f64 {
         self.thickness
     }
 
@@ -240,8 +242,7 @@ impl Lodecoder {
 
     fn collect(&mut self, mut dest: Collector) -> CatResult<()> {
         for (i, frame) in self.frames.drain(..).enumerate() {
-            let delay = ((i + 1) * 100 / self.fps) - (i * 100 / self.fps); // See telecine/pulldown.
-            dest.add_frame_png_file(i, frame, delay as f64)?;
+            dest.add_frame_png_file(i, frame, i as f64 / self.fps as f64)?;
         }
         Ok(())
     }
@@ -257,12 +258,14 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
 
         let (turtle_width, turtle_height, min_x, min_y) = self.state.inner().inner().bounds();
 
+        let padding = options.padding as f64;
+
         // We add some padding to the width reported by our turtle to make
         // our final image look a little nicer.
-        let width = 2 * options.padding + turtle_width;
-        let height = 2 * options.padding + turtle_height;
+        let width = (2.0 * padding) + turtle_width;
+        let height = (2.0 * padding) + turtle_height;
 
-        let mut buffer = ImageBuffer::new(width, height);
+        let mut buffer = ImageBuffer::new(width.ceil() as u32, height.ceil() as u32);
         fill_mut(&mut buffer, options.fill_color);
 
         let mut files = Vec::new();
@@ -270,11 +273,9 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         // Helper functions for converting between the coordinate system used
         // by the image crate and our coordinate system.  These functions also
         // take care of the padding for us.
-        let xp = |x: i32| -> u32 { (x - min_x + options.padding as i32) as u32 };
+        let xp = |x: f64| -> f64 { x - min_x + padding };
 
-        let yp = |y: i32| -> u32 {
-            (i64::from(height) - i64::from(y - min_y + options.padding as i32)) as u32
-        };
+        let yp = |y: f64| -> f64 { height - (y - min_y + padding) };
 
         let mut absolute_frame_counter = 0;
         let total_frame_counter = self.state.inner().inner().lines().len();
@@ -318,7 +319,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
 
                 // spawn a thread to do this work
                 workers.push(std::thread::spawn(move || {
-                    local_buffer.save(filename).unwrap();
+                    save_png(&local_buffer, filename.as_path());
                 }));
             }
         }
@@ -373,21 +374,25 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
         self.compute(system.get_state());
 
         let (turtle_width, turtle_height, min_x, min_y) = self.state.inner().inner().bounds();
-        let width = 2 * options.padding + turtle_width;
-        let height = 2 * options.padding + turtle_height;
 
-        let mut buffer = ImageBuffer::new(width, height);
+        let padding = options.padding as f64;
+
+        let width = 2.0 * padding + turtle_width;
+        let height = 2.0 * padding + turtle_height;
+
+        let buffer_width = width.ceil() as u32;
+        let buffer_height = height.ceil() as u32;
+
+        let mut buffer = ImageBuffer::new(buffer_width, buffer_height);
         fill_mut(&mut buffer, options.fill_color);
 
         // Helper functions for converting between the coordinate system used
         // by the image crate and our coordinate system.  These functions also
         // take care of the padding for us.
-        let xp = |x: i32| -> u32 { (x - min_x + options.padding as i32) as u32 };
+        let xp = |x: f64| -> f64 { x - min_x + padding };
+        let yp = |y: f64| -> f64 { height - (y - min_y + padding) };
 
-        let yp = |y: i32| -> u32 {
-            (i64::from(height) - i64::from(y - min_y + options.padding as i32)) as u32
-        };
-
+        // Determine the pixels we want to draw
         for (x1, y1, x2, y2) in self.state.inner().inner().lines() {
             draw_line_mut(
                 &mut buffer,
@@ -402,4 +407,19 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
 
         buffer
     }
+}
+
+/// Convenience function for saving image renderer output.  This uses the [`mtpng`] crate which
+/// is significantly faster than calling [`image::ImageBuffer::save`] directly.
+pub fn save_png(buffer: &ImageBuffer<Rgb<u8>, Vec<u8>>, path: &Path) {
+    let file = File::create(path).unwrap();
+
+    let options = Options::new();
+    let mut encoder = Encoder::new(file, &options);
+    let mut header = Header::new();
+    header.set_size(buffer.width(), buffer.height()).unwrap();
+    header.set_color(ColorType::Truecolor, 8).unwrap();
+    encoder.write_header(&header).unwrap();
+    encoder.write_image_rows(buffer.as_raw()).unwrap();
+    encoder.finish().unwrap();
 }

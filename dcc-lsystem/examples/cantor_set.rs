@@ -1,7 +1,9 @@
 use image::{ImageBuffer, Rgb};
 
 use dcc_lsystem::image::fill_mut;
+use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::LSystemBuilder;
+use std::path::Path;
 
 fn main() {
     let mut builder = LSystemBuilder::new();
@@ -64,7 +66,5 @@ fn main() {
         }
     }
 
-    buffer
-        .save("cantor_set.png")
-        .expect("Failed to save to cantor_set.png");
+    save_png(&buffer, Path::new("cantor_set.png"));
 }

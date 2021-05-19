@@ -131,7 +131,9 @@ pub fn main() {
             continue 'processing;
         }
 
-        buffer.save("test_render.png").expect("Saving file failed");
+        buffer
+            .save("random_fractal_generator.png")
+            .expect("Saving file failed");
 
         break;
     }
