@@ -3,19 +3,20 @@ use image::Rgb;
 use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use dcc_lsystem::LSystemError;
 use std::path::Path;
 
-fn main() {
+fn main() -> Result<(), LSystemError> {
     let mut builder = TurtleLSystemBuilder::new();
 
     builder
-        .token("F", TurtleAction::Forward(30))
-        .token("+", TurtleAction::Rotate(90))
-        .token("-", TurtleAction::Rotate(-90))
-        .axiom("F")
-        .rule("F => F + F - F - F + F");
+        .token("F", TurtleAction::Forward(30))?
+        .token("+", TurtleAction::Rotate(90))?
+        .token("-", TurtleAction::Rotate(-90))?
+        .axiom("F")?
+        .rule("F => F + F - F - F + F")?;
 
-    let (mut system, renderer) = builder.finish();
+    let (mut system, renderer) = builder.finish()?;
     system.step_by(7);
 
     let options = ImageRendererOptionsBuilder::new()
@@ -26,5 +27,7 @@ fn main() {
         .build();
 
     let buffer = renderer.render(&system, &options);
-    save_png(&buffer, Path::new("koch_curve.png"));
+    save_png(&buffer, Path::new("koch_curve.png"))?;
+
+    Ok(())
 }

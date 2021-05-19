@@ -1,4 +1,4 @@
-use crate::arena::{Arena, ArenaId};
+use crate::LSystemError;
 
 /// A token for use in an L-system.  In general, the `LSystem` owns the token,
 /// while the user can refer to the token via an `ArenaId`.  This means
@@ -9,44 +9,45 @@ pub struct Token {
 }
 
 impl Token {
-    /// Create a new token with the given name.
+    /// Create a new token with the given name.  Note that `name` must *not* contain
+    /// any spaces.
     ///
-    /// # Panics
-    /// This function will panic if `name` contains any spaces
-    pub fn new<T: Into<String>>(name: T) -> Self {
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::token::Token;
+    ///
+    /// // A token can be whatever you want
+    /// let token = Token::new("daisy").unwrap();
+    ///
+    /// // Except it can't have spaces!
+    /// assert!(Token::new("geddy lee").is_err());
+    /// ```
+    pub fn new<T: Into<String>>(name: T) -> Result<Self, LSystemError> {
         let name = name.into();
 
         if name.contains(' ') {
-            panic!("Token name may not contain whitespace");
+            Err(LSystemError::InvalidToken(name))
+        } else {
+            Ok(Self { name })
         }
-
-        Self { name }
     }
 
     /// Get the name of this token
-    pub fn name(&self) -> &String {
-        &self.name
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::token::Token;
+    ///
+    /// let token = Token::new("cow").unwrap();
+    /// assert_eq!(token.name(), "cow");
+    /// ```
+    pub fn name(&self) -> &str {
+        self.name.as_str()
     }
 }
 
 impl std::fmt::Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(f, "{}", self.name())
-    }
-}
-
-impl Arena<Token> {
-    /// Returns a string representation of the given slice of ArenaId's in terms
-    /// of the contents of this arena.
-    pub fn render(&self, tokens: &[ArenaId]) -> String {
-        assert!(self.is_valid_slice(tokens));
-
-        let mut st = String::new();
-
-        for token in tokens {
-            st.push_str(&format!("{}", self.get(*token).unwrap()));
-        }
-
-        st
     }
 }

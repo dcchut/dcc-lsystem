@@ -7,6 +7,7 @@ use rand::{thread_rng, Rng};
 use dcc_lsystem::renderer::ImageRendererOptionsBuilder;
 use dcc_lsystem::renderer::Renderer;
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use dcc_lsystem::LSystemError;
 
 fn valid_rule(rule: &[&str]) -> bool {
     if rule.is_empty() {
@@ -35,7 +36,7 @@ fn valid_rule(rule: &[&str]) -> bool {
     level == 0
 }
 
-pub fn main() {
+pub fn main() -> Result<(), LSystemError> {
     'processing: loop {
         // generate random axiom out of L, R, F, X, Y
         // and random rules for X, Y
@@ -100,19 +101,19 @@ pub fn main() {
 
         // Build our system up
         builder
-            .token("L", TurtleAction::Rotate(25))
-            .token("R", TurtleAction::Rotate(-25))
-            .token("F", TurtleAction::Forward(100))
-            .token("+", TurtleAction::Push)
-            .token("-", TurtleAction::Pop)
-            .token("X", TurtleAction::Nothing)
-            .token("Y", TurtleAction::Nothing)
-            .axiom(&axiom.join(" "))
-            .rule(format!("X => {}", x_rule.join(" ")).as_str())
-            .rule(format!("Y => {}", y_rule.join(" ")).as_str());
+            .token("L", TurtleAction::Rotate(25))?
+            .token("R", TurtleAction::Rotate(-25))?
+            .token("F", TurtleAction::Forward(100))?
+            .token("+", TurtleAction::Push)?
+            .token("-", TurtleAction::Pop)?
+            .token("X", TurtleAction::Nothing)?
+            .token("Y", TurtleAction::Nothing)?
+            .axiom(&axiom.join(" "))?
+            .rule(format!("X => {}", x_rule.join(" ")).as_str())?
+            .rule(format!("Y => {}", y_rule.join(" ")).as_str())?;
 
         // Consume the builder to construct an LSystem and the associated renderer
-        let (mut system, renderer) = builder.finish();
+        let (mut system, renderer) = builder.finish()?;
 
         let options = ImageRendererOptionsBuilder::new()
             .padding(20)
@@ -137,4 +138,6 @@ pub fn main() {
 
         break;
     }
+
+    Ok(())
 }
