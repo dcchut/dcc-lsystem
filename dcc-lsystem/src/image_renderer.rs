@@ -303,9 +303,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         }
 
         for child in workers {
-            child
-                .join()
-                .map_err(|_| LSystemError::RenderError("failure in worker thread"))??;
+            child.join().map_err(|_| LSystemError::ThreadError)??;
 
             if let Some(pb) = pb.as_mut() {
                 pb.inc();
@@ -341,7 +339,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
         writer.write(file, &mut *progress)?;
         let _ = decode_thread
             .join()
-            .map_err(|_| LSystemError::RenderError("failure in decode thread"))?;
+            .map_err(|_| LSystemError::ThreadError)?;
         progress.done(&format!("Output written to {}", options.filename));
 
         // Now delete the temporary files

@@ -16,10 +16,20 @@ pub enum LSystemError {
     MissingAxiom,
     #[error("io error")]
     IOError(#[from] std::io::Error),
-    #[cfg(feature = "image_renderer")]
-    #[error("{0}")]
-    RenderError(&'static str),
-    #[cfg(feature = "image_renderer")]
-    #[error("gifski error")]
-    GifskiError(#[from] gifski::Error),
+    #[error("there was an unexpected error in another thread")]
+    ThreadError,
+    #[error("there was an unexpected error: {source}")]
+    Other {
+        #[source]
+        source: Box<dyn std::error::Error + Send + Sync>,
+    },
+}
+
+#[cfg(feature = "image_renderer")]
+impl From<gifski::Error> for LSystemError {
+    fn from(e: gifski::Error) -> Self {
+        LSystemError::Other {
+            source: Box::new(e),
+        }
+    }
 }
