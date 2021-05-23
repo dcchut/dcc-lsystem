@@ -3,24 +3,25 @@ use image::Rgb;
 use dcc_lsystem::image_renderer::save_png;
 use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use dcc_lsystem::LSystemError;
 use std::path::Path;
 
-fn main() {
+fn main() -> Result<(), LSystemError> {
     let mut builder = TurtleLSystemBuilder::new();
 
     builder
-        .token("X", TurtleAction::Nothing)
-        .token("F", TurtleAction::Forward(200))
-        .token("+", TurtleAction::Rotate(25))
-        .token("-", TurtleAction::Rotate(-25))
-        .token("[", TurtleAction::Push)
-        .token("]", TurtleAction::Pop)
-        .axiom("X")
-        .rule("X => F + [ [ X ] - X ] - F [ - F X ] + X")
-        .rule("F => F F")
+        .token("X", TurtleAction::Nothing)?
+        .token("F", TurtleAction::Forward(200))?
+        .token("+", TurtleAction::Rotate(25))?
+        .token("-", TurtleAction::Rotate(-25))?
+        .token("[", TurtleAction::Push)?
+        .token("]", TurtleAction::Pop)?
+        .axiom("X")?
+        .rule("X => F + [ [ X ] - X ] - F [ - F X ] + X")?
+        .rule("F => F F")?
         .rotate(70);
 
-    let (mut system, renderer) = builder.finish();
+    let (mut system, renderer) = builder.finish()?;
     system.step_by(6);
 
     let options = ImageRendererOptionsBuilder::new()
@@ -31,5 +32,7 @@ fn main() {
         .build();
 
     let buffer = renderer.render(&system, &options);
-    save_png(&buffer, Path::new("fractal_plant.png"));
+    save_png(&buffer, Path::new("fractal_plant.png"))?;
+
+    Ok(())
 }

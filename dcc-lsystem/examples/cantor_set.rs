@@ -2,20 +2,20 @@ use image::{ImageBuffer, Rgb};
 
 use dcc_lsystem::image::fill_mut;
 use dcc_lsystem::image_renderer::save_png;
-use dcc_lsystem::LSystemBuilder;
+use dcc_lsystem::{LSystemBuilder, LSystemError};
 use std::path::Path;
 
-fn main() {
+fn main() -> Result<(), LSystemError> {
     let mut builder = LSystemBuilder::new();
 
-    let a = builder.token("A");
-    let b = builder.token("B");
+    let a = builder.token("A")?;
+    let b = builder.token("B")?;
 
-    builder.axiom(vec![a]);
-    builder.transformation_rule(a, vec![a, b, a]);
-    builder.transformation_rule(b, vec![b, b, b]);
+    builder.axiom(vec![a])?;
+    builder.transformation_rule(a, vec![a, b, a])?;
+    builder.transformation_rule(b, vec![b, b, b])?;
 
-    let mut system = builder.finish();
+    let mut system = builder.finish()?;
 
     // the total number of states (including the initial state!) to render
     let step_limit = 6;
@@ -66,5 +66,7 @@ fn main() {
         }
     }
 
-    save_png(&buffer, Path::new("cantor_set.png"));
+    save_png(&buffer, Path::new("cantor_set.png"))?;
+
+    Ok(())
 }

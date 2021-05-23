@@ -2,20 +2,21 @@ use image::Rgb;
 
 use dcc_lsystem::renderer::{ImageRendererOptionsBuilder, Renderer};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use dcc_lsystem::LSystemError;
 
-fn main() {
+fn main() -> Result<(), LSystemError> {
     let mut builder = TurtleLSystemBuilder::new();
 
     builder
-        .token("F", TurtleAction::Forward(200))
-        .token("G", TurtleAction::Forward(200))
-        .token("+", TurtleAction::Rotate(120))
-        .token("-", TurtleAction::Rotate(-120))
-        .axiom("F - G - G")
-        .rule("F => F - G + F + G - F")
-        .rule("G => G G");
+        .token("F", TurtleAction::Forward(200))?
+        .token("G", TurtleAction::Forward(200))?
+        .token("+", TurtleAction::Rotate(120))?
+        .token("-", TurtleAction::Rotate(-120))?
+        .axiom("F - G - G")?
+        .rule("F => F - G + F + G - F")?
+        .rule("G => G G")?;
 
-    let (mut system, renderer) = builder.finish();
+    let (mut system, renderer) = builder.finish()?;
     system.step_by(7);
 
     let options = ImageRendererOptionsBuilder::new()
@@ -29,4 +30,6 @@ fn main() {
         .render(&system, &options)
         .save("sierpinski_triangle.png")
         .expect("Failed to save to sierpinski_triangle.png");
+
+    Ok(())
 }

@@ -2,6 +2,7 @@ use crate::dcc_lsystem::LSystem;
 use crate::image::{draw_line_mut, fill_mut};
 use crate::renderer::{Renderer, TurtleRenderer};
 use crate::turtle::TurtleContainer;
+use crate::LSystemError;
 use gifski::progress::{NoProgress, ProgressReporter};
 use gifski::{CatResult, Collector, Repeat};
 use image::{ImageBuffer, Rgb};
@@ -15,51 +16,43 @@ use std::thread;
 use std::time::Duration;
 
 pub struct ImageRendererOptionsBuilder {
-    padding: Option<u32>,
-    thickness: Option<f64>,
-    fill_color: Option<Rgb<u8>>,
-    line_color: Option<Rgb<u8>>,
+    options: ImageRendererOptions,
 }
 
 impl ImageRendererOptionsBuilder {
     pub fn new() -> Self {
-        // TODO: think up some sensible options for these variables
-        // so we don't end up panicking by default
         Self {
-            padding: None,
-            thickness: None,
-            fill_color: None,
-            line_color: None,
+            options: ImageRendererOptions {
+                padding: 20,
+                thickness: 15.0,
+                fill_color: Rgb([255, 255, 255]),
+                line_color: Rgb([0, 0, 0]),
+            },
         }
     }
 
     pub fn padding(&mut self, padding: u32) -> &mut Self {
-        self.padding = Some(padding);
+        self.options.padding = padding;
         self
     }
 
     pub fn thickness(&mut self, thickness: f64) -> &mut Self {
-        self.thickness = Some(thickness);
+        self.options.thickness = thickness;
         self
     }
 
     pub fn fill_color(&mut self, fill_color: Rgb<u8>) -> &mut Self {
-        self.fill_color = Some(fill_color);
+        self.options.fill_color = fill_color;
         self
     }
 
     pub fn line_color(&mut self, line_color: Rgb<u8>) -> &mut Self {
-        self.line_color = Some(line_color);
+        self.options.line_color = line_color;
         self
     }
 
     pub fn build(&mut self) -> ImageRendererOptions {
-        ImageRendererOptions {
-            padding: self.padding.unwrap(),
-            thickness: self.thickness.unwrap(),
-            fill_color: self.fill_color.unwrap(),
-            line_color: self.line_color.unwrap(),
-        }
+        self.options.clone()
     }
 }
 
@@ -69,6 +62,7 @@ impl Default for ImageRendererOptionsBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct ImageRendererOptions {
     padding: u32,
     thickness: f64,
@@ -95,83 +89,67 @@ impl ImageRendererOptions {
 }
 
 pub struct VideoRendererOptionsBuilder {
-    filename: Option<String>,
-    fps: Option<usize>,
-    skip_by: Option<usize>,
-    padding: Option<u32>,
-    thickness: Option<f64>,
-    fill_color: Option<Rgb<u8>>,
-    line_color: Option<Rgb<u8>>,
-    progress_bar: Option<bool>,
+    options: VideoRendererOptions,
 }
 
 impl VideoRendererOptionsBuilder {
     pub fn new() -> Self {
-        // TODO: think up some sensible options for these variables
-        // so we don't end up panicking by default
         Self {
-            filename: Some(String::from("render.gif")),
-            fps: Some(20),
-            skip_by: Some(0),
-            padding: None,
-            thickness: None,
-            fill_color: None,
-            line_color: None,
-            progress_bar: Some(false),
+            options: VideoRendererOptions {
+                filename: String::from("render.gif"),
+                fps: 20,
+                skip_by: 0,
+                padding: 20,
+                thickness: 15.0,
+                fill_color: Rgb([255, 255, 255]),
+                line_color: Rgb([0, 0, 0]),
+                progress_bar: false,
+            },
         }
     }
 
     pub fn filename<T: Into<String>>(&mut self, filename: T) -> &mut Self {
-        self.filename = Some(filename.into());
+        self.options.filename = filename.into();
         self
     }
 
     pub fn fps(&mut self, fps: usize) -> &mut Self {
-        self.fps = Some(fps);
+        self.options.fps = fps;
         self
     }
 
     pub fn skip_by(&mut self, skip_by: usize) -> &mut Self {
-        self.skip_by = Some(skip_by);
+        self.options.skip_by = skip_by;
         self
     }
 
     pub fn padding(&mut self, padding: u32) -> &mut Self {
-        self.padding = Some(padding);
+        self.options.padding = padding;
         self
     }
 
     pub fn thickness(&mut self, thickness: f64) -> &mut Self {
-        self.thickness = Some(thickness);
+        self.options.thickness = thickness;
         self
     }
 
     pub fn fill_color(&mut self, fill_color: Rgb<u8>) -> &mut Self {
-        self.fill_color = Some(fill_color);
+        self.options.fill_color = fill_color;
         self
     }
 
     pub fn line_color(&mut self, line_color: Rgb<u8>) -> &mut Self {
-        self.line_color = Some(line_color);
+        self.options.line_color = line_color;
         self
     }
 
     pub fn progress_bar(&mut self, progress_bar: bool) -> &mut Self {
-        self.progress_bar = Some(progress_bar);
+        self.options.progress_bar = progress_bar;
         self
     }
 
     pub fn build(&mut self) -> VideoRendererOptions {
-        VideoRendererOptions {
-            filename: self.filename.as_ref().unwrap().clone(),
-            fps: self.fps.unwrap(),
-            skip_by: self.skip_by.unwrap(),
-            padding: self.padding.unwrap(),
-            thickness: self.thickness.unwrap(),
-            fill_color: self.fill_color.unwrap(),
-            line_color: self.line_color.unwrap(),
-            progress_bar: self.progress_bar.unwrap(),
-        }
+        self.options.clone()
     }
 }
 
@@ -181,6 +159,7 @@ impl Default for VideoRendererOptionsBuilder {
     }
 }
 
+#[derive(Clone)]
 pub struct VideoRendererOptions {
     filename: String,
     fps: usize,
@@ -249,9 +228,8 @@ impl Lodecoder {
 }
 
 impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
-    type Output = ();
+    type Output = Result<(), LSystemError>;
 
-    // ffmpeg -r 24 -f image2 -i frame-%8d.png -vcodec libx264 -crf 20 -pix_fmt yuv420p output.mp4
     fn render(mut self, system: &LSystem, options: &VideoRendererOptions) -> Self::Output {
         // Setup our state machine based on the system state
         self.compute(system.get_state());
@@ -286,7 +264,7 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             None
         };
 
-        let dir = tempfile::tempdir().unwrap();
+        let dir = tempfile::tempdir()?;
         let mut workers = Vec::new();
 
         for (frame_counter, (x1, y1, x2, y2)) in
@@ -302,8 +280,8 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
                 options.line_color,
             );
 
-            if options.progress_bar {
-                pb.as_mut().unwrap().inc();
+            if let Some(pb) = pb.as_mut() {
+                pb.inc();
             }
 
             if options.skip_by == 0 || frame_counter % options.skip_by == 0 {
@@ -318,21 +296,22 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
                 let local_buffer = buffer.clone();
 
                 // spawn a thread to do this work
-                workers.push(std::thread::spawn(move || {
-                    save_png(&local_buffer, filename.as_path());
+                workers.push(std::thread::spawn(move || -> Result<(), LSystemError> {
+                    save_png(&local_buffer, filename.as_path())
                 }));
             }
         }
 
         for child in workers {
-            child.join().expect("Failure");
-            if options.progress_bar {
-                pb.as_mut().unwrap().inc();
+            child.join().map_err(|_| LSystemError::ThreadError)??;
+
+            if let Some(pb) = pb.as_mut() {
+                pb.inc();
             }
         }
 
-        if options.progress_bar {
-            pb.unwrap().finish();
+        if let Some(pb) = pb.as_mut() {
+            pb.finish();
         }
 
         let settings = gifski::Settings {
@@ -353,16 +332,20 @@ impl<Q: TurtleContainer> Renderer<VideoRendererOptions> for TurtleRenderer<Q> {
             Box::new(pb)
         };
 
-        let (collector, writer) = gifski::new(settings).expect("Failed to initialise gifski");
+        let (collector, writer) = gifski::new(settings)?;
         let decode_thread = thread::spawn(move || decoder.collect(collector));
 
-        let file = File::create(&options.filename).expect("Couldn't open output file");
-        writer.write(file, &mut *progress).expect("Failed to write");
-        let _ = decode_thread.join().expect("Failed to decode");
+        let file = File::create(&options.filename)?;
+        writer.write(file, &mut *progress)?;
+        let _ = decode_thread
+            .join()
+            .map_err(|_| LSystemError::ThreadError)?;
         progress.done(&format!("Output written to {}", options.filename));
 
         // Now delete the temporary files
         drop(dir);
+
+        Ok(())
     }
 }
 
@@ -411,15 +394,17 @@ impl<Q: TurtleContainer> Renderer<ImageRendererOptions> for TurtleRenderer<Q> {
 
 /// Convenience function for saving image renderer output.  This uses the [`mtpng`] crate which
 /// is significantly faster than calling [`image::ImageBuffer::save`] directly.
-pub fn save_png(buffer: &ImageBuffer<Rgb<u8>, Vec<u8>>, path: &Path) {
-    let file = File::create(path).unwrap();
+pub fn save_png(buffer: &ImageBuffer<Rgb<u8>, Vec<u8>>, path: &Path) -> Result<(), LSystemError> {
+    let file = File::create(path)?;
 
     let options = Options::new();
     let mut encoder = Encoder::new(file, &options);
     let mut header = Header::new();
-    header.set_size(buffer.width(), buffer.height()).unwrap();
-    header.set_color(ColorType::Truecolor, 8).unwrap();
-    encoder.write_header(&header).unwrap();
-    encoder.write_image_rows(buffer.as_raw()).unwrap();
-    encoder.finish().unwrap();
+    header.set_size(buffer.width(), buffer.height())?;
+    header.set_color(ColorType::Truecolor, 8)?;
+    encoder.write_header(&header)?;
+    encoder.write_image_rows(buffer.as_raw())?;
+    encoder.finish()?;
+
+    Ok(())
 }

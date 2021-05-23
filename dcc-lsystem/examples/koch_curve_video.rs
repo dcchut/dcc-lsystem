@@ -2,18 +2,19 @@ use image::Rgb;
 
 use dcc_lsystem::renderer::{Renderer, VideoRendererOptionsBuilder};
 use dcc_lsystem::turtle::{TurtleAction, TurtleLSystemBuilder};
+use dcc_lsystem::LSystemError;
 
-fn main() {
+fn main() -> Result<(), LSystemError> {
     let mut builder = TurtleLSystemBuilder::new();
 
     builder
-        .token("F", TurtleAction::Forward(30))
-        .token("+", TurtleAction::Rotate(90))
-        .token("-", TurtleAction::Rotate(-90))
-        .axiom("F")
-        .rule("F => F + F - F - F + F");
+        .token("F", TurtleAction::Forward(30))?
+        .token("+", TurtleAction::Rotate(90))?
+        .token("-", TurtleAction::Rotate(-90))?
+        .axiom("F")?
+        .rule("F => F + F - F - F + F")?;
 
-    let (mut system, renderer) = builder.finish();
+    let (mut system, renderer) = builder.finish()?;
     system.step_by(4);
 
     let options = VideoRendererOptionsBuilder::new()
@@ -27,5 +28,7 @@ fn main() {
         .progress_bar(true)
         .build();
 
-    renderer.render(&system, &options);
+    renderer.render(&system, &options)?;
+
+    Ok(())
 }

@@ -21,6 +21,7 @@ tempfile = "3.2"
 pbr = "1.0"
 rand = "0.8"
 dyn-clone = "1.0"
+thiserror = "1.0"
 
 [features]
 image_renderer = ["image", "imageproc", "gif", "gifski", "mtpng"]
@@ -74,3 +75,7 @@ required-features = ["image_renderer"]
 [[example]]
 name = "dragon_curve_data"
 path = "examples/dragon_curve_data.rs"
+
+[badges]
+github = { repository = "dcchut/dcc-lsystem" }
+codecov =  { repository = "dcchut/dcc-lsystem" }

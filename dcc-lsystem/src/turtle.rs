@@ -1,3 +1,5 @@
+//! Contains a collection of turtles which can be used to interpret the state of an LSystem
+//! as a rendering.
 use std::collections::HashMap;
 
 use rand::Rng;
@@ -7,10 +9,10 @@ use dcc_lsystem_derive::TurtleContainer;
 use lazy_static::lazy_static;
 
 use crate::renderer::TurtleRenderer;
-use crate::{ArenaId, LSystem, LSystemBuilder};
+use crate::{ArenaId, LSystem, LSystemBuilder, LSystemError};
 use std::f64::consts::FRAC_PI_2;
 
-/// A simple trait for an integer-valued Turtle.
+/// A simple Turtle trait.
 ///
 /// Any implementation of this trait should contain a `BaseTurtle` struct which
 /// is referred to by the `inner` and `inner_mut` methods.  This BaseTurtle deals
@@ -121,6 +123,32 @@ pub trait Stack: MovingTurtle {
     fn pop(&mut self);
 }
 
+/// The basic work horse-turtle.  Keeps track of where it is, where it's been, and
+/// whether the pen that our turtle is wielding is down.
+///
+/// # Example
+/// ```rust
+/// use dcc_lsystem::turtle::BaseTurtle;
+///
+/// let mut turtle = BaseTurtle::new();
+/// assert_eq!(turtle.x(), 0.0);
+/// assert_eq!(turtle.y(), 0.0);
+///
+/// // Move the turtle to (1.0, 1.0)
+/// turtle.delta_move(1.0, 1.0);
+/// assert_eq!(turtle.x(), 1.0);
+/// assert_eq!(turtle.y(), 1.0);
+///
+/// // The turtle should have a line from (0., 0.) to (1., 1.)
+/// assert_eq!(turtle.lines(), &[(0., 0., 1., 1.)]);
+///
+/// // Lifting the pen up means moving won't cause an additional line to be created.
+/// turtle.pen_up();
+/// turtle.delta_move(1.0, 0.0);
+/// assert_eq!(turtle.x(), 2.0);
+/// assert_eq!(turtle.y(), 1.0);
+/// assert_eq!(turtle.lines().len(), 1);
+/// ```
 #[derive(Clone, Debug)]
 pub struct BaseTurtle {
     x: f64,
@@ -134,7 +162,16 @@ pub struct BaseTurtle {
 }
 
 impl BaseTurtle {
-    /// Creates a new `BaseTurtle` instance.
+    /// Creates a new [`BaseTurtle`] instance.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let turtle = BaseTurtle::new();
+    /// assert_eq!(turtle.x(), 0.0);
+    /// assert_eq!(turtle.y(), 0.0);
+    /// ```
     pub fn new() -> Self {
         Self {
             x: 0.0,
@@ -149,21 +186,67 @@ impl BaseTurtle {
     }
 
     /// Returns the current `x` coordinate of the turtle.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// assert_eq!(turtle.x(), 0.0);
+    ///
+    /// turtle.delta_move(-15.4, 0.0);
+    /// assert_eq!(turtle.x(), -15.4);
+    /// ```
     pub fn x(&self) -> f64 {
         self.x
     }
 
     /// Returns the current `y` coordinate of the turtle.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// assert_eq!(turtle.y(), 0.0);
+    ///
+    /// turtle.delta_move(0.0, 14.0);
+    /// assert_eq!(turtle.y(), 14.0);
+    /// ```
     pub fn y(&self) -> f64 {
         self.y
     }
 
     /// Returns a slice containing all the lines `(x1, y1, x2, y2)` traversed by the turtle.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// assert!(turtle.lines().is_empty());
+    ///
+    /// turtle.delta_move(5.0, -5.0);
+    /// turtle.delta_move(1.0, 1.0);
+    ///
+    /// assert_eq!(turtle.lines(), &[(0., 0., 5., -5.), (5., -5., 6., -4.)]);
+    /// ```
     pub fn lines(&self) -> &[(f64, f64, f64, f64)] {
         &self.lines
     }
 
     /// Set the current position of this turtle to `(x,y)`.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// turtle.set_position(99.0, 200.0);
+    ///
+    /// assert_eq!(turtle.x(), 99.0);
+    /// assert_eq!(turtle.y(), 200.0);
+    /// ```
     pub fn set_position(&mut self, x: f64, y: f64) {
         self.x = x;
         self.y = y;
@@ -178,6 +261,22 @@ impl BaseTurtle {
     }
 
     /// Moves the turtle by `(dx,dy)`.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// // Turtle is initially at (0., 0.)
+    /// let mut turtle = BaseTurtle::new();
+    ///
+    /// turtle.delta_move(5.0, 5.0);
+    /// assert_eq!(turtle.x(), 5.0);
+    /// assert_eq!(turtle.y(), 5.0);
+    ///
+    /// turtle.delta_move(2.0, -8.0);
+    /// assert_eq!(turtle.x(), 7.0);
+    /// assert_eq!(turtle.y(), -3.0);
+    /// ```
     pub fn delta_move(&mut self, dx: f64, dy: f64) {
         let x2 = self.x + dx;
         let y2 = self.y + dy;
@@ -199,6 +298,19 @@ impl BaseTurtle {
     ///
     /// This is useful for converting from turtle coordinates to a new coordinate system starting at `(0,0)`
     /// with width `total_width`, height `total_height`, and all positions have positive `x` and `y` coordinates.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// assert_eq!(turtle.bounds(), (0., 0., 0., 0.));
+    ///
+    /// turtle.set_position(5.0, 5.0);
+    /// turtle.set_position(-4.0, -3.0);
+    ///
+    /// assert_eq!(turtle.bounds(), (9.0, 8.0, -4.0, -3.0));
+    /// ```
     pub fn bounds(&self) -> (f64, f64, f64, f64) {
         (
             (self.max_x + self.min_x.abs()),
@@ -208,12 +320,38 @@ impl BaseTurtle {
         )
     }
 
-    /// Puts the turtles pen down.
+    /// Puts the turtles pen down.  While the pen is down the turtle will draw a line
+    /// when it moves.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// turtle.pen_down();
+    ///
+    /// // Moving the turtle causes a line to be drawn
+    /// turtle.delta_move(3.0, -4.0);
+    /// assert_eq!(turtle.lines(), &[(0., 0., 3.0, -4.0)]);
+    /// ```
     pub fn pen_down(&mut self) {
         self.pen_down = true;
     }
 
-    /// Pulls the turtles pen up.
+    /// Pulls the turtles pen up.  While the pen is up the turtle will not draw lines
+    /// when it moves.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::BaseTurtle;
+    ///
+    /// let mut turtle = BaseTurtle::new();
+    /// turtle.pen_up();
+    ///
+    /// // Moving the turtle with the pen up doesn't draw a line
+    /// turtle.delta_move(3.0, -4.0);
+    /// assert!(turtle.lines().is_empty());
+    /// ```
     pub fn pen_up(&mut self) {
         self.pen_down = false;
     }
@@ -236,6 +374,14 @@ pub enum Heading {
 
 impl Heading {
     /// Returns the `Heading` that is 90 degrees left of this one.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::Heading;
+    ///
+    /// let heading = Heading::North;
+    /// assert_eq!(heading.left(), Heading::West);
+    /// ```
     pub fn left(self) -> Self {
         match self {
             Heading::North => Heading::West,
@@ -246,11 +392,30 @@ impl Heading {
     }
 
     /// Returns the `Heading` that is 90 degrees right of this one.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::Heading;
+    ///
+    /// let heading = Heading::North;
+    /// assert_eq!(heading.right(), Heading::East);
+    /// ```
     pub fn right(self) -> Self {
         // Don't judge me...
         self.left().left().left()
     }
 
+    /// Returns a horizontal shift (-1, 0, or 1) based on the current heading.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::Heading;
+    ///
+    /// assert_eq!(Heading::East.dx(), 1);
+    /// assert_eq!(Heading::West.dx(), -1);
+    /// assert_eq!(Heading::North.dx(), 0);
+    /// assert_eq!(Heading::South.dx(), 0);
+    /// ```
     pub fn dx(self) -> i32 {
         match self {
             Heading::West => -1,
@@ -259,6 +424,17 @@ impl Heading {
         }
     }
 
+    /// Returns a vertical shift (-1, 0, or 1) base on the current heading.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::turtle::Heading;
+    ///
+    /// assert_eq!(Heading::North.dy(), 1);
+    /// assert_eq!(Heading::South.dy(), -1);
+    /// assert_eq!(Heading::East.dy(), 0);
+    /// assert_eq!(Heading::West.dy(), 0);
+    /// ```
     pub fn dy(self) -> i32 {
         match self {
             Heading::North => 1,
@@ -268,13 +444,11 @@ impl Heading {
     }
 }
 
-/// A simple turtle implementation.  It has the following features:
+/// A simple turtle implementation.
 ///
-/// * You can change direction! (`turtle.set_heading(f64)`, `turtle.left(f64)`, and `turtle.right(f64)`)
-/// * You can make it move! (`turtle.forward(i32)`)
-/// * Stacks! (`turtle.push()` and `turtle.pop()`)
-///
-/// and some other features.
+/// * You can change direction! (see [`SimpleTurtle::set_heading`], [`SimpleTurtle::left`], and  [`SimpleTurtle::right`])
+/// * You can make it move! (see [`SimpleTurtle::forward`])
+/// * Stacks! (see [`SimpleTurtle::push`] and [`SimpleTurtle::pop`])
 #[derive(Clone, Debug)]
 pub struct SimpleTurtle {
     turtle: BaseTurtle,
@@ -317,12 +491,13 @@ impl Stack for SimpleTurtle {
             .push((self.turtle.x(), self.turtle.y(), self.heading));
     }
 
-    /// Pops the position and heading off the stack.
+    /// Pops the position and heading off the stack.  If the stack is empty
+    /// then popping will do nothing.
     fn pop(&mut self) {
-        let (x, y, heading) = self.stack.pop().expect("Called pop on empty stack");
-
-        self.turtle.set_position(x, y);
-        self.heading = heading;
+        if let Some((x, y, heading)) = self.stack.pop() {
+            self.turtle.set_position(x, y);
+            self.heading = heading;
+        }
     }
 }
 
@@ -411,73 +586,78 @@ impl TurtleLSystemBuilder {
     }
 
     /// Associate a token and corresponding action to this builder.
-    pub fn token<S: Into<String>>(&mut self, token: S, action: TurtleAction) -> &mut Self {
+    pub fn token<S: Into<String>>(
+        &mut self,
+        token: S,
+        action: TurtleAction,
+    ) -> Result<&mut Self, LSystemError> {
         let ident = token.into();
 
-        let token = self.builder.token(ident.clone());
+        let token = self.builder.token(ident.clone())?;
 
         self.tokens.insert(ident, token);
         self.actions.insert(token, action);
 
-        self
+        Ok(self)
     }
 
     /// Set the axiom  for this builder.
-    pub fn axiom(&mut self, ident: &str) -> &mut Self {
+    pub fn axiom(&mut self, ident: &str) -> Result<&mut Self, LSystemError> {
         let mut axiom = Vec::new();
 
         for part in ident.split_whitespace() {
-            let token = self.get_token(part).expect("Invalid axiom");
+            let token = self.get_token(part)?;
 
             axiom.push(token);
         }
 
         assert_ne!(axiom.len(), 0);
 
-        self.builder.axiom(axiom);
+        self.builder.axiom(axiom)?;
 
-        self
+        Ok(self)
     }
 
-    fn get_token(&self, token: &str) -> Option<ArenaId> {
-        self.tokens.get(token).cloned()
+    fn get_token(&self, token: &str) -> Result<ArenaId, LSystemError> {
+        self.tokens
+            .get(token)
+            .cloned()
+            .ok_or_else(|| LSystemError::UnknownToken(token.to_string()))
     }
 
     /// Add a transformation rule to the builder.
-    pub fn rule<'a, S: Into<&'a str>>(&mut self, rule: S) -> &mut Self {
+    pub fn rule<'a, S: Into<&'a str>>(&mut self, rule: S) -> Result<&mut Self, LSystemError> {
         let rule = rule.into();
 
         lazy_static! {
             static ref RE: Regex = Regex::new(r"\s*(\w)\s*=>\s*((?:\s*\S+\s*)*)\s*").unwrap();
         }
 
-        let cap = RE.captures(rule).expect("Invalid rule");
+        let cap = RE
+            .captures(rule)
+            .ok_or_else(|| LSystemError::InvalidRule(rule.to_string()))?;
 
         // The LHS of our rule
-        let lhs = self
-            .get_token(&cap[1])
-            .unwrap_or_else(|| panic!("Invalid token: {}", &cap[1]));
+        let lhs = self.get_token(&cap[1])?;
 
         // Construct the RHS of our rule
         let mut rule = Vec::new();
 
         for token in cap[2].split_whitespace() {
-            let token = self
-                .get_token(token)
-                .unwrap_or_else(|| panic!("Invalid token: {}", token));
+            let token = self.get_token(token)?;
 
             rule.push(token);
         }
 
         // Add the rule to our builder
-        self.builder.transformation_rule(lhs, rule);
+        self.builder.transformation_rule(lhs, rule)?;
 
-        self
+        Ok(self)
     }
 
     /// Consumes the builder, returning the generated `LSystem` and a `Renderer`
     /// which can associate tokens in the `LSystem` to turtle actions.
-    pub fn finish(self) -> (LSystem, TurtleRenderer<TurtleLSystemState>) {
+    pub fn finish(self) -> Result<(LSystem, TurtleRenderer<TurtleLSystemState>), LSystemError> {
         let mut renderer = TurtleRenderer::new(TurtleLSystemState::new());
 
         // Register the processing functions for each action
@@ -492,7 +672,10 @@ impl TurtleLSystemBuilder {
                 TurtleAction::Pop => {
                     renderer.register(id, |state| {
                         state.turtle.pop();
-                        state.angle = state.angle_stack.pop().expect("Popped with empty stack");
+                        // popping from an empty stack doesn't do anything
+                        if let Some(angle) = state.angle_stack.pop() {
+                            state.angle = angle;
+                        }
                     });
                 }
                 TurtleAction::Forward(distance) => {
@@ -529,7 +712,7 @@ impl TurtleLSystemBuilder {
             }
         }
 
-        (self.builder.finish(), renderer)
+        Ok((self.builder.finish()?, renderer))
     }
 }
 

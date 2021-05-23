@@ -1,4 +1,5 @@
-name: Push action
+name: main
+
 on: [push]
 jobs:
   test:

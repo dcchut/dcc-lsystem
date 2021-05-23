@@ -236,6 +236,23 @@ impl<T> Arena<T> {
             pos: 0,
         }
     }
+
+    /// Returns a slice representing the memory underlying this arena.
+    ///
+    /// # Example
+    /// ```rust
+    /// use dcc_lsystem::Arena;
+    ///
+    /// let mut arena = Arena::new();
+    /// let x = arena.push(9);
+    /// let y = arena.push(-9);
+    /// let z = arena.push(3);
+    ///
+    /// assert_eq!(arena.as_slice(), &[9, -9, 3]);
+    /// ```
+    pub fn as_slice(&self) -> &[T] {
+        self.arena.as_slice()
+    }
 }
 
 /// An iterator that yields the current ArenaId and the element during iterator.
@@ -299,6 +316,7 @@ impl<'a, T> Iterator for EnumerableArena<'a, T> {
             self.pos += 1;
             Some((
                 ArenaId(self.pos - 1),
+                // unwrap: we verified above that self.pos - 1 < self.inner.arena.len()
                 self.inner.arena.get(self.pos - 1).unwrap(),
             ))
         }
