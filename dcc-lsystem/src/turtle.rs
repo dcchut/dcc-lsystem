@@ -49,7 +49,6 @@ use std::f64::consts::FRAC_PI_2;
 ///     }
 /// }
 /// ```
-///
 pub trait MovingTurtle {
     type Item;
 
@@ -75,8 +74,7 @@ pub trait MovingTurtle {
 /// #[derive(TurtleContainer)]
 /// struct BasicContainer {
 ///     #[turtle]
-///     inner : SimpleTurtle,
-///
+///     inner: SimpleTurtle,
 ///     /* <----- some other fields ----- */
 /// }
 /// ```
@@ -84,11 +82,10 @@ pub trait MovingTurtle {
 /// which is roughly equivalent to the following:
 ///
 /// ```rust
-/// use dcc_lsystem::turtle::{SimpleTurtle, TurtleContainer, MovingTurtle};
+/// use dcc_lsystem::turtle::{MovingTurtle, SimpleTurtle, TurtleContainer};
 ///
 /// struct BasicContainer {
-///     inner : SimpleTurtle,
-///
+///     inner: SimpleTurtle,
 ///     /* <----- some other fields ----- */
 /// }
 ///
@@ -99,7 +96,7 @@ pub trait MovingTurtle {
 ///         &self.inner
 ///     }
 /// }
-///```
+/// ```
 pub trait TurtleContainer {
     type Item;
 

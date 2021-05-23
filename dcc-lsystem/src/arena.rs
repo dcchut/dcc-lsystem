@@ -187,9 +187,9 @@ impl<T> Arena<T> {
     /// let y = arena.push(3);
     /// let z = arena.push(7);
     ///
-    /// assert!(arena.is_valid_slice(&[x,y]));
-    /// assert!(arena.is_valid_slice(&[x,y,z]));
-    /// assert!(!arena.is_valid_slice(&[x,y,ArenaId(3)]));
+    /// assert!(arena.is_valid_slice(&[x, y]));
+    /// assert!(arena.is_valid_slice(&[x, y, z]));
+    /// assert!(!arena.is_valid_slice(&[x, y, ArenaId(3)]));
     /// ```
     pub fn is_valid_slice(&self, slice: &[ArenaId]) -> bool {
         slice.iter().all(|id| self.is_valid(*id))
