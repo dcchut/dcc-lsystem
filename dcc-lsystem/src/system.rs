@@ -266,7 +266,6 @@ impl LSystem {
     /// # Ok(())
     /// # }
     /// ```
-    ///
     pub fn get_state(&self) -> &[ArenaId] {
         &self.state
     }

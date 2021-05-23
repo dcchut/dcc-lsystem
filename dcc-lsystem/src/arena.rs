@@ -187,9 +187,9 @@ impl<T> Arena<T> {
     /// let y = arena.push(3);
     /// let z = arena.push(7);
     ///
-    /// assert!(arena.is_valid_slice(&[x,y]));
-    /// assert!(arena.is_valid_slice(&[x,y,z]));
-    /// assert!(!arena.is_valid_slice(&[x,y,ArenaId(3)]));
+    /// assert!(arena.is_valid_slice(&[x, y]));
+    /// assert!(arena.is_valid_slice(&[x, y, z]));
+    /// assert!(!arena.is_valid_slice(&[x, y, ArenaId(3)]));
     /// ```
     pub fn is_valid_slice(&self, slice: &[ArenaId]) -> bool {
         slice.iter().all(|id| self.is_valid(*id))
@@ -232,8 +232,7 @@ impl<T> Arena<T> {
     /// ```
     pub fn enumerate(&self) -> EnumerableArena<'_, T> {
         EnumerableArena {
-            inner: &self,
-            pos: 0,
+            inner: self.arena.iter().enumerate(),
         }
     }
 
@@ -300,26 +299,15 @@ impl<T> Arena<T> {
 /// }
 /// ```
 pub struct EnumerableArena<'a, T: 'a> {
-    inner: &'a Arena<T>,
-
-    // Current position of our iterator
-    pos: usize,
+    inner: std::iter::Enumerate<std::slice::Iter<'a, T>>,
 }
 
 impl<'a, T> Iterator for EnumerableArena<'a, T> {
     type Item = (ArenaId, &'a T);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos >= self.inner.arena.len() {
-            None
-        } else {
-            self.pos += 1;
-            Some((
-                ArenaId(self.pos - 1),
-                // unwrap: we verified above that self.pos - 1 < self.inner.arena.len()
-                self.inner.arena.get(self.pos - 1).unwrap(),
-            ))
-        }
+        let (index, t) = self.inner.next()?;
+        Some((ArenaId(index), t))
     }
 }
 
