@@ -9,7 +9,7 @@ edition = "2018"
 readme = "../README.md"
 
 [dependencies]
-image = { version = "0.23", optional = true }
+image = { version = "0.24", optional = true }
 imageproc = { version = "0.22", optional = true }
 gif = { version = "0.11", optional = true }
 gifski = { version = "1.4", optional = true }
