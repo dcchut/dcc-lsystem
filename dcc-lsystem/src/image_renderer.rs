@@ -219,7 +219,7 @@ impl Lodecoder {
         self.frames.len() as u64
     }
 
-    fn collect(&mut self, mut dest: Collector) -> CatResult<()> {
+    fn collect(&mut self, dest: Collector) -> CatResult<()> {
         for (i, frame) in self.frames.drain(..).enumerate() {
             dest.add_frame_png_file(i, frame, i as f64 / self.fps as f64)?;
         }
