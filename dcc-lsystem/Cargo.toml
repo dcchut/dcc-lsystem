@@ -10,8 +10,7 @@ readme = "../README.md"
 
 [dependencies]
 image = { version = "0.24", optional = true }
-# Temporary branch until imageproc adds image 0.24 support.
-imageproc = { git = "https://github.com/dcchut/imageproc.git", branch = "image_0_24_update", optional = true }
+imageproc = { version = "0.23", optional = true }
 gif = { version = "0.11", optional = true }
 gifski = { version = "1.4", optional = true }
 mtpng = { version = "0.3", optional = true }

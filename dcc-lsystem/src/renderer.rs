@@ -19,6 +19,7 @@ pub trait Renderer<S> {
 
 pub struct TurtleRenderer<Q: TurtleContainer> {
     pub(crate) state: Q,
+    #[allow(clippy::type_complexity)]
     state_actions: HashMap<ArenaId, Box<dyn Fn(&mut Q)>>,
     aliases: HashMap<ArenaId, ArenaId>,
 }
