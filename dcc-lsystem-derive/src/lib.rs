@@ -13,7 +13,7 @@ pub fn derive_turtle_container(input: TokenStream) -> TokenStream {
         if let Fields::Named(ref fields) = data.fields {
             for field in fields.named.iter() {
                 for attr in field.attrs.iter() {
-                    if attr.path.is_ident("turtle") {
+                    if attr.path().is_ident("turtle") {
                         let field_type = &field.ty;
                         let field_ident = &field.ident;
                         let struct_ident = &input.ident;
